@@ -37,6 +37,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 type DashboardNavRole = "customer" | "admin"
@@ -90,23 +91,31 @@ const dashboardNav: Record<DashboardNavRole, DashboardNavItem[]> = {
 const isActive = (pathname: string, href: string) =>
   pathname === href || pathname.startsWith(`${href}/`);
 
-const SidebarBrand = () => (
-  <Link href="/" className="flex shrink-0 items-center gap-2 px-2">
-    <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-      <Scissors className="size-4" />
-    </span>
-    <span className="text-lg font-semibold tracking-tight">SalonBook</span>
-  </Link>
-);
+const SidebarBrand = () => {
+  const { state } = useSidebar()
+
+  return (
+    <Link href="/" className="flex shrink-0 items-center gap-2 px-2">
+      <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <Scissors className="size-4" />
+      </span>
+      {state !== "collapsed" && (
+        <span className="text-lg font-semibold tracking-tight">
+          SalonBook
+        </span>
+      )}
+    </Link>
+  )
+}
 
 const SidebarNav = ({
   items,
   pathname,
   onNavigate,
 }: {
-  items: DashboardNavItem[];
-  pathname: string;
-  onNavigate?: () => void;
+  items: DashboardNavItem[]
+  pathname: string
+  onNavigate?: () => void
 }) => (
   <SidebarGroup>
     <SidebarGroupLabel>Menu</SidebarGroupLabel>
@@ -131,22 +140,23 @@ const SidebarNav = ({
       ))}
     </SidebarMenu>
   </SidebarGroup>
-);
+)
 
 const SidebarUser = ({
   onNavigate,
 }: {
-  onNavigate?: () => void;
+  onNavigate?: () => void
 }) => {
-  const { data: session, isPending } = useSession();
-  const user = session?.user;
-  const role = (user as { role?: string } | undefined)?.role ?? "customer";
+  const { state } = useSidebar()
+  const { data: session, isPending } = useSession()
+  const user = session?.user
+  const role = (user as { role?: string } | undefined)?.role ?? "customer"
 
   const handleSignOut = async () => {
-    await signOut();
-    onNavigate?.();
-    toast.success("Signed out successfully");
-  };
+    await signOut()
+    onNavigate?.()
+    toast.success("Signed out successfully")
+  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -170,16 +180,26 @@ const SidebarUser = ({
                 {user.name?.charAt(0).toUpperCase() ?? "U"}
               </AvatarFallback>
             </Avatar>
-            <div className="flex min-w-0 flex-col">
-              <p className="truncate text-sm font-semibold">{user.name}</p>
-              <p className="truncate text-xs text-muted-foreground">
-                {user.email}
-              </p>
-            </div>
+
+            {/* Name and email only visible when expanded */}
+            {state !== "collapsed" && (
+              <div className="flex min-w-0 flex-col">
+                <p className="truncate text-sm font-semibold">
+                  {user.name}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </p>
+              </div>
+            )}
           </div>
-          <Badge variant="secondary" className="w-fit tracking-wide uppercase">
-            {role}
-          </Badge>
+
+          {/* Role badge only visible when expanded */}
+          {state !== "collapsed" && (
+            <Badge variant="secondary" className="w-fit tracking-wide uppercase">
+              {role}
+            </Badge>
+          )}
         </>
       ) : (
         // Safe fallback when signed out
@@ -206,18 +226,18 @@ const SidebarUser = ({
         </>
       )}
     </div>
-  );
-};
+  )
+}
 
 const DashboardSidebar = () => {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   // Role comes from the session; falls back to "customer" (same fallback the
   // Navbar uses) so no role is hardcoded.
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = useSession()
   const role =
-    (session?.user as { role?: string } | undefined)?.role ?? "customer";
-  const items = dashboardNav[role as DashboardNavRole] ?? dashboardNav.customer;
+    (session?.user as { role?: string } | undefined)?.role ?? "customer"
+  const items = dashboardNav[role as DashboardNavRole] ?? dashboardNav.customer
 
   return (
     <Sidebar side="left" variant="sidebar" collapsible="icon">
@@ -242,7 +262,7 @@ const DashboardSidebar = () => {
         <SidebarUser />
       </SidebarFooter>
     </Sidebar>
-  );
-};
+  )
+}
 
-export default DashboardSidebar;
+export default DashboardSidebar
