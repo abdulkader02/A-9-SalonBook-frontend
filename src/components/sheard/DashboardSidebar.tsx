@@ -36,9 +36,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   SidebarSeparator,
-  SidebarTrigger,
 } from "@/components/ui/sidebar"
 
 type DashboardNavRole = "customer" | "admin"
@@ -222,37 +220,28 @@ const DashboardSidebar = () => {
   const items = dashboardNav[role as DashboardNavRole] ?? dashboardNav.customer;
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      {/* Desktop sidebar */}
-      <Sidebar side="left" variant="sidebar" collapsible="icon">
-        <SidebarHeader>
-          <SidebarBrand />
-        </SidebarHeader>
-        <SidebarContent>
-          {isPending ? (
-            <div className="flex flex-col gap-1 p-2">
-              <div className="h-3 w-10 rounded bg-sidebar-accent/60" />
-              <div className="mt-1 flex flex-col gap-1.5">
-                <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
-                <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
-                <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
-              </div>
-            </div>
-          ) : (
-            <SidebarNav items={items} pathname={pathname} />
-          )}
-        </SidebarContent>
-        <SidebarFooter>
-          <SidebarUser />
-        </SidebarFooter>
-      </Sidebar>
-
-      {/* Visible dashboard header with toggle (desktop + mobile) */}
-      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b bg-background px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <Sidebar side="left" variant="sidebar" collapsible="icon">
+      <SidebarHeader>
         <SidebarBrand />
-        <SidebarTrigger aria-label="Toggle sidebar" />
-      </header>
-    </SidebarProvider>
+      </SidebarHeader>
+      <SidebarContent>
+        {isPending ? (
+          <div className="flex flex-col gap-1 p-2">
+            <div className="h-3 w-10 rounded bg-sidebar-accent/60" />
+            <div className="mt-1 flex flex-col gap-1.5">
+              <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
+              <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
+              <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
+            </div>
+          </div>
+        ) : (
+          <SidebarNav items={items} pathname={pathname} />
+        )}
+      </SidebarContent>
+      <SidebarFooter>
+        <SidebarUser />
+      </SidebarFooter>
+    </Sidebar>
   );
 };
 
