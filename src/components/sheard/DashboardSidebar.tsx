@@ -95,6 +95,19 @@ const SidebarBrand = () => (
   </Link>
 );
 
+// Skeleton shown while the session (and therefore the role) is still
+// resolving, so the wrong role's menu never flashes on screen.
+const SidebarNavSkeleton = () => (
+  <div className="flex flex-col gap-1">
+    <div className="h-3 w-10 rounded bg-sidebar-accent/60" />
+    <div className="mt-1 flex flex-col gap-1.5">
+      <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
+      <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
+      <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
+    </div>
+  </div>
+);
+
 const SidebarNav = ({
   items,
   pathname,
@@ -210,7 +223,7 @@ const DashboardSidebar = () => {
 
   // Role comes from the session; falls back to "customer" (same fallback the
   // Navbar uses) so no role is hardcoded.
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const role =
     (session?.user as { role?: string } | undefined)?.role ?? "customer";
   const items = dashboardNav[role as DashboardNavRole] ?? dashboardNav.customer;
@@ -222,7 +235,11 @@ const DashboardSidebar = () => {
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 border-r border-sidebar-border bg-sidebar p-4 md:flex">
         <SidebarBrand />
-        <SidebarNav items={items} pathname={pathname} />
+        {isPending ? (
+          <SidebarNavSkeleton />
+        ) : (
+          <SidebarNav items={items} pathname={pathname} />
+        )}
         <div className="mt-auto">
           <SidebarUser />
         </div>
@@ -256,11 +273,15 @@ const DashboardSidebar = () => {
               </SheetTitle>
             </SheetHeader>
             <div className="flex flex-1 flex-col gap-6 overflow-y-auto py-4">
-              <SidebarNav
-                items={items}
-                pathname={pathname}
-                onNavigate={closeMobile}
-              />
+              {isPending ? (
+                <SidebarNavSkeleton />
+              ) : (
+                <SidebarNav
+                  items={items}
+                  pathname={pathname}
+                  onNavigate={closeMobile}
+                />
+              )}
               <div className="mt-auto">
                 <SidebarUser onNavigate={closeMobile} />
               </div>
