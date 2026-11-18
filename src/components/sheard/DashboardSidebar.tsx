@@ -1,8 +1,7 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   CalendarCheck,
   CreditCard,
@@ -14,33 +13,41 @@ import {
   UserRound,
   Users,
   type LucideIcon,
-} from "lucide-react";
-import { toast } from "sonner";
+} from "lucide-react"
+import { toast } from "sonner"
 
-import { useSession, signOut } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useSession, signOut } from "@/lib/auth-client"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+} from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 
-type DashboardNavRole = "customer" | "admin";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarSeparator,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+
+type DashboardNavRole = "customer" | "admin"
 
 interface DashboardNavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
+  href: string
+  label: string
+  icon: LucideIcon
 }
 
 // Navigation built from the roles defined in src/lib/auth.ts ("admin" |
@@ -95,19 +102,6 @@ const SidebarBrand = () => (
   </Link>
 );
 
-// Skeleton shown while the session (and therefore the role) is still
-// resolving, so the wrong role's menu never flashes on screen.
-const SidebarNavSkeleton = () => (
-  <div className="flex flex-col gap-1">
-    <div className="h-3 w-10 rounded bg-sidebar-accent/60" />
-    <div className="mt-1 flex flex-col gap-1.5">
-      <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
-      <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
-      <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
-    </div>
-  </div>
-);
-
 const SidebarNav = ({
   items,
   pathname,
@@ -117,28 +111,29 @@ const SidebarNav = ({
   pathname: string;
   onNavigate?: () => void;
 }) => (
-  <nav className="flex flex-col gap-1">
-    <p className="px-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-      Menu
-    </p>
-    {items.map((item) => (
-      <Link
-        key={item.href}
-        href={item.href}
-        onClick={onNavigate}
-        aria-current={isActive(pathname, item.href) ? "page" : undefined}
-        className={cn(
-          "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50",
-          isActive(pathname, item.href)
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
-        )}
-      >
-        <item.icon className="size-4 shrink-0" />
-        {item.label}
-      </Link>
-    ))}
-  </nav>
+  <SidebarGroup>
+    <SidebarGroupLabel>Menu</SidebarGroupLabel>
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.href}>
+          <SidebarMenuButton
+            isActive={isActive(pathname, item.href)}
+            tooltip={item.label}
+            render={
+              <Link
+                href={item.href}
+                onClick={onNavigate}
+                className="flex items-center gap-2 w-full"
+              >
+                <item.icon className="size-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            }
+          />
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  </SidebarGroup>
 );
 
 const SidebarUser = ({
@@ -202,10 +197,10 @@ const SidebarUser = ({
 
       {user && (
         <>
-          <Separator />
+          <SidebarSeparator />
           <Button
             variant="ghost"
-            className="justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="justify-start w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={handleSignOut}
           >
             <LogOut />
@@ -219,7 +214,6 @@ const SidebarUser = ({
 
 const DashboardSidebar = () => {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Role comes from the session; falls back to "customer" (same fallback the
   // Navbar uses) so no role is hardcoded.
@@ -228,68 +222,38 @@ const DashboardSidebar = () => {
     (session?.user as { role?: string } | undefined)?.role ?? "customer";
   const items = dashboardNav[role as DashboardNavRole] ?? dashboardNav.customer;
 
-  const closeMobile = () => setMobileOpen(false);
-
   return (
-    <>
+    <SidebarProvider defaultOpen={true}>
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 border-r border-sidebar-border bg-sidebar p-4 md:flex">
-        <SidebarBrand />
-        {isPending ? (
-          <SidebarNavSkeleton />
-        ) : (
-          <SidebarNav items={items} pathname={pathname} />
-        )}
-        <div className="mt-auto">
-          <SidebarUser />
-        </div>
-      </aside>
-
-      {/* Mobile top bar with drawer toggle */}
-      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b bg-background px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden">
-        <SidebarBrand />
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Open dashboard menu"
-              />
-            }
-          >
-            <Menu />
-          </SheetTrigger>
-          <SheetContent
-            side="left"
-            className="w-72 max-w-[85vw] gap-0 p-4"
-          >
-            <SheetHeader className="p-0">
-              <SheetTitle className="flex items-center gap-2">
-                <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Scissors className="size-3.5" />
-                </span>
-                SalonBook
-              </SheetTitle>
-            </SheetHeader>
-            <div className="flex flex-1 flex-col gap-6 overflow-y-auto py-4">
-              {isPending ? (
-                <SidebarNavSkeleton />
-              ) : (
-                <SidebarNav
-                  items={items}
-                  pathname={pathname}
-                  onNavigate={closeMobile}
-                />
-              )}
-              <div className="mt-auto">
-                <SidebarUser onNavigate={closeMobile} />
+      <Sidebar side="left" variant="sidebar" collapsible="icon">
+        <SidebarHeader>
+          <SidebarBrand />
+        </SidebarHeader>
+        <SidebarContent>
+          {isPending ? (
+            <div className="flex flex-col gap-1 p-2">
+              <div className="h-3 w-10 rounded bg-sidebar-accent/60" />
+              <div className="mt-1 flex flex-col gap-1.5">
+                <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
+                <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
+                <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent" />
               </div>
             </div>
-          </SheetContent>
-        </Sheet>
+          ) : (
+            <SidebarNav items={items} pathname={pathname} />
+          )}
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarUser />
+        </SidebarFooter>
+      </Sidebar>
+
+      {/* Mobile header with trigger */}
+      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b bg-background px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden">
+        <SidebarBrand />
+        <SidebarTrigger aria-label="Toggle sidebar" />
       </header>
-    </>
+    </SidebarProvider>
   );
 };
 
