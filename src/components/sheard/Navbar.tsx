@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 const publicLinks = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Browse Services" },
+  { href: "/#aboutus", label: "About Us" },
 ];
 
 const Navbar = () => {
@@ -135,7 +136,7 @@ const Navbar = () => {
                     Dashboard
                   </Link>
                   <Link
-                    href="/dashboard/profile"
+                    href="/profile"
                     onClick={closeMenu}
                     className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
                   >

@@ -4,8 +4,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
-import Navbar from "@/components/sheard/Navbar"
-import Footer from "@/components/sheard/Footer"
+
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -24,7 +23,7 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={cn(
-        "antialiased",
+        "scroll-smooth antialiased",
         fontMono.variable,
         "font-sans",
         geist.variable
@@ -32,9 +31,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-screen flex-col overflow-x-hidden">
         <ThemeProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>

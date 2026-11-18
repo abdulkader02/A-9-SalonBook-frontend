@@ -43,7 +43,7 @@ const SignInForm = () => {
         return;
       }
       toast.success("Signed in successfully!");
-      router.push("/dashboard");
+      router.push("/");
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
