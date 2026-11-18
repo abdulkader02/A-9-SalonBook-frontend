@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { signIn, signUp } from "@/lib/auth-client"
 import { Eye, EyeOff, Scissors, Trash2, Upload, User } from "lucide-react"
 import { toast } from "sonner"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { useImgBBUpload } from "@/lib/hooks/useImgBBUpload"
 
 const passwordRules = [
   {
@@ -40,11 +41,15 @@ const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  // Selected image file + its local preview + the ImgBB URL once uploaded.
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined)
-  const [uploadingImage, setUploadingImage] = useState(false)
+  // Profile image select/preview/upload - now shared with the Profile page via this hook.
+  const {
+    imageFile,
+    imagePreview,
+    imageUrl,
+    uploadingImage,
+    handleImageChange,
+    clearImage,
+  } = useImgBBUpload()
 
   const validatePassword = (password: string) => {
     const failed = passwordRules.find((rule) => !rule.test(password))
@@ -53,76 +58,6 @@ const SignUpForm = () => {
       return false
     }
     return true
-  }
-
-  const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0]
-    if (imagePreview) URL.revokeObjectURL(imagePreview)
-
-    if (!file) {
-      setImageFile(null)
-      setImagePreview(null)
-      setImageUrl(undefined)
-      return
-    }
-
-    // Accept image files only
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file.")
-      event.target.value = ""
-      setImageFile(null)
-      setImagePreview(null)
-      setImageUrl(undefined)
-      return
-    }
-
-    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY
-    if (!apiKey) {
-      toast.error("Image upload is unavailable: missing ImgBB API key.")
-      event.target.value = ""
-      setImageFile(null)
-      setImagePreview(null)
-      return
-    }
-
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
-    setImageUrl(undefined)
-
-    // Upload to ImgBB; only the returned URL is kept for registration.
-    setUploadingImage(true)
-    try {
-      const formData = new FormData()
-      formData.append("image", file)
-
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: "POST",
-        body: formData,
-      })
-      const result = await res.json().catch(() => null)
-
-      if (!res.ok || !result?.data?.url) {
-        toast.error(
-          result?.error?.message ?? "Image upload failed. Please try again."
-        )
-        return
-      }
-
-      setImageUrl(result.data.url)
-    } catch {
-      toast.error("Image upload failed. Please try again.")
-    } finally {
-      setUploadingImage(false)
-    }
-  }
-
-  const clearImage = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview)
-    setImageFile(null)
-    setImagePreview(null)
-    setImageUrl(undefined)
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
