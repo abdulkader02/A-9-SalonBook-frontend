@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useSession, signOut } from "@/lib/auth-client";
+import { useState } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useSession, signOut } from "@/lib/auth-client"
 import {
   Scissors,
   Menu,
@@ -11,97 +11,89 @@ import {
   LogOut,
   UserRound,
   ChevronDown,
-} from "lucide-react";
-import { toast } from "sonner";
+} from "lucide-react"
+import { toast } from "sonner"
 
-import { Button } from "@/components/ui/button";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
+} from "@/components/ui/sheet"
+import { cn } from "@/lib/utils"
 
 const publicLinks = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Browse Services" },
   { href: "/#aboutus", label: "About Us" },
-];
+]
 
 const Navbar = () => {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   // Better Auth session
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = useSession()
 
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
-  const user = session?.user;
-  const role =
-    (user as { role?: string } | undefined)?.role ?? "customer";
+  const user = session?.user
+  const role = (user as { role?: string } | undefined)?.role ?? "customer"
 
   const dashboardPath =
-    role === "admin" ? "/dashboard/admin" : "/dashboard/customer";
+    role === "admin" ? "/dashboard/admin" : "/dashboard/customer"
 
   // Active navigation
   const isActive = (href: string) => {
     if (href === "/" || href === "/#aboutus") {
-      return pathname === "/";
+      return pathname === "/"
     }
 
-    return pathname === href || pathname.startsWith(`${href}/`);
-  };
+    return pathname === href || pathname.startsWith(`${href}/`)
+  }
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => setMenuOpen(false)
 
   // Sign out handler
   const handleSignOut = async () => {
-    if (isSigningOut) return;
+    if (isSigningOut) return
 
     try {
-      setIsSigningOut(true);
+      setIsSigningOut(true)
 
-      const { error } = await signOut();
+      const { error } = await signOut()
 
       if (error) {
-        toast.error("Failed to sign out. Please try again.");
-        console.error("Sign out error:", error);
-        return;
+        toast.error("Failed to sign out. Please try again.")
+        console.error("Sign out error:", error)
+        return
       }
 
-      closeMenu();
-      setMobileOpen(false);
+      closeMenu()
+      setMobileOpen(false)
 
-      toast.success("Signed out successfully.");
-
+      toast.success("Signed out successfully.")
     } catch (error) {
-      console.error("Unexpected sign out error:", error);
-      toast.error("Something went wrong. Please try again.");
-
+      console.error("Unexpected sign out error:", error)
+      toast.error("Something went wrong. Please try again.")
     } finally {
-      setIsSigningOut(false);
+      setIsSigningOut(false)
     }
-  };
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6 lg:px-8">
-
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -121,9 +113,7 @@ const Navbar = () => {
               href={link.href}
               className={cn(
                 "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground",
-                isActive(link.href)
-                  ? "text-primary"
-                  : "text-muted-foreground"
+                isActive(link.href) ? "text-primary" : "text-muted-foreground"
               )}
             >
               {link.label}
@@ -133,12 +123,9 @@ const Navbar = () => {
 
         {/* Desktop Authentication */}
         <div className="hidden items-center gap-2 md:flex">
-
           {isPending ? (
             <div className="size-8 animate-pulse rounded-full bg-muted" />
-
           ) : user ? (
-
             <Popover open={menuOpen} onOpenChange={setMenuOpen}>
               <PopoverTrigger
                 render={
@@ -148,10 +135,7 @@ const Navbar = () => {
                   >
                     <Avatar className="size-7">
                       {user.image && (
-                        <AvatarImage
-                          src={user.image}
-                          alt={user.name}
-                        />
+                        <AvatarImage src={user.image} alt={user.name} />
                       )}
 
                       <AvatarFallback>
@@ -169,12 +153,9 @@ const Navbar = () => {
               />
 
               <PopoverContent align="end" className="w-64 gap-1.5 p-3">
-
                 {/* User Information */}
                 <div className="flex flex-col gap-0.5 px-1">
-                  <p className="truncate text-sm font-semibold">
-                    {user.name}
-                  </p>
+                  <p className="truncate text-sm font-semibold">{user.name}</p>
 
                   <p className="truncate text-xs text-muted-foreground">
                     {user.email}
@@ -192,20 +173,19 @@ const Navbar = () => {
 
                 {/* Profile Menu */}
                 <nav className="flex flex-col gap-0.5">
-
                   <Link
                     href={dashboardPath}
                     onClick={closeMenu}
-                    className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+                    className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
                   >
                     <LayoutDashboard className="size-4" />
                     Dashboard
                   </Link>
 
                   <Link
-                    href="/profile"
+                    href="/dashboard/customer/profile"
                     onClick={closeMenu}
-                    className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+                    className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
                   >
                     <UserRound className="size-4" />
                     My Profile
@@ -215,34 +195,27 @@ const Navbar = () => {
                     type="button"
                     onClick={handleSignOut}
                     disabled={isSigningOut}
-                    className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-destructive outline-none transition-colors hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-destructive transition-colors outline-none hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <LogOut className="size-4" />
                     {isSigningOut ? "Signing out..." : "Sign Out"}
                   </button>
-
                 </nav>
               </PopoverContent>
             </Popover>
-
           ) : (
-
             <>
               <Button variant="ghost" render={<Link href="/sign-in" />}>
                 Sign In
               </Button>
 
-              <Button render={<Link href="/sign-up" />}>
-                Sign Up
-              </Button>
+              <Button render={<Link href="/sign-up" />}>Sign Up</Button>
             </>
-
           )}
         </div>
 
         {/* Mobile Navigation */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-
           <SheetTrigger
             render={
               <Button
@@ -257,13 +230,11 @@ const Navbar = () => {
           />
 
           <SheetContent side="right" className="w-72 max-w-[85vw]">
-
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Scissors className="size-3.5" />
                 </span>
-
                 SalonBook
               </SheetTitle>
             </SheetHeader>
@@ -289,22 +260,15 @@ const Navbar = () => {
 
             {/* Mobile Authentication */}
             <div className="mt-auto flex flex-col gap-2 border-t p-4">
-
               {isPending ? (
-
                 <div className="h-10 animate-pulse rounded-lg bg-muted" />
-
               ) : user ? (
-
                 <>
                   {/* Mobile User Information */}
                   <div className="flex items-center gap-3 pb-3">
                     <Avatar className="size-9">
                       {user.image && (
-                        <AvatarImage
-                          src={user.image}
-                          alt={user.name}
-                        />
+                        <AvatarImage src={user.image} alt={user.name} />
                       )}
 
                       <AvatarFallback>
@@ -350,9 +314,7 @@ const Navbar = () => {
                     {isSigningOut ? "Signing out..." : "Sign Out"}
                   </Button>
                 </>
-
               ) : (
-
                 <>
                   <Button
                     variant="outline"
@@ -369,16 +331,13 @@ const Navbar = () => {
                     Sign Up
                   </Button>
                 </>
-
               )}
-
             </div>
           </SheetContent>
         </Sheet>
-
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar

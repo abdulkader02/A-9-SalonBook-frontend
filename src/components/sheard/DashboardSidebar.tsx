@@ -205,6 +205,7 @@ const SidebarUser = ({
         // Safe fallback when signed out
         <Button
           variant="outline"
+          nativeButton={false}
           render={<Link href="/sign-in" />}
           onClick={onNavigate}
         >

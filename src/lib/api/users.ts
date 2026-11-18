@@ -1,15 +1,19 @@
 import type { User } from "@/lib/type/users"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export const getUserById = async (id: string): Promise<User> => {
   const res = await fetch(`${API_BASE_URL}/users/${id}`, {
     cache: "no-store",
   })
+
   if (!res.ok) {
     throw new Error(`Failed to fetch user profile (${res.status})`)
   }
-  return res.json()
+
+  const result = await res.json()
+
+  return result.data
 }
 
 export const updateUserProfile = async (
@@ -31,5 +35,9 @@ export const updateUserProfile = async (
     }
     throw new Error(message)
   }
-  return res.json()
+  const result = await res.json()
+
+  // console.log("Updated Profile Response:", result)
+
+  return result.data
 }

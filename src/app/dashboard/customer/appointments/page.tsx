@@ -130,8 +130,8 @@ const MyAppointmentsPage = () => {
 
   if (errorMessage) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
+      <section className="flex flex-1 flex-col items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex w-full max-w-xl flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
           <span className="flex size-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
             <AlertCircle className="size-5" />
           </span>
@@ -139,7 +139,7 @@ const MyAppointmentsPage = () => {
           <p className="max-w-sm text-sm text-muted-foreground">
             {errorMessage}
           </p>
-          <Button variant="outline" render={<Link href="/services" />}>
+          <Button variant="outline" nativeButton={false} render={<Link href="/services" />}>
             Browse Services
           </Button>
         </div>
@@ -149,8 +149,8 @@ const MyAppointmentsPage = () => {
 
   if (appointments.length === 0) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
+      <section className="flex flex-1 flex-col items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex w-full max-w-xl flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
           <span className="flex size-11 items-center justify-center rounded-xl bg-accent text-accent-foreground">
             <Calendar className="size-5" />
           </span>
@@ -158,7 +158,7 @@ const MyAppointmentsPage = () => {
           <p className="max-w-sm text-sm text-muted-foreground">
             Book your first salon service and track your appointments here.
           </p>
-          <Button variant="outline" render={<Link href="/services" />}>
+          <Button variant="outline" nativeButton={false} render={<Link href="/services" />}>
             Browse Services
           </Button>
         </div>

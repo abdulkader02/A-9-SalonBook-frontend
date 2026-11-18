@@ -1,7 +1,7 @@
 
 import type { Service } from "@/lib/type/services";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type GetServicesParams = {
   search?: string;

@@ -60,6 +60,7 @@ const CustomerProfilePage = () => {
     const fetchProfile = async () => {
       try {
         const data = await getUserById(customerId)
+        // console.log("Profile API Data:", data)
         setUser(data)
         setName(data.name)
         setPhone(data.phone ?? "")
@@ -160,7 +161,7 @@ const CustomerProfilePage = () => {
           <p className="max-w-sm text-sm text-muted-foreground">
             {errorMessage}
           </p>
-          <Button variant="outline" render={<Link href="/dashboard/customer" />}>
+          <Button variant="outline" nativeButton={false} render={<Link href="/dashboard/customer" />}>
             Back to Dashboard
           </Button>
         </div>
@@ -177,15 +178,16 @@ const CustomerProfilePage = () => {
           </span>
           <h2 className="font-semibold">Profile not found</h2>
           <p className="max-w-sm text-sm text-muted-foreground">
-            We couldn't find your profile information.
+            We couldn&apos;t find your profile information.
           </p>
-          <Button variant="outline" render={<Link href="/dashboard/customer" />}>
+          <Button variant="outline" nativeButton={false} render={<Link href="/dashboard/customer" />}>
             Back to Dashboard
           </Button>
         </div>
       </section>
     )
   }
+  const displayRole = user.role || "customer"
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
@@ -209,6 +211,8 @@ const CustomerProfilePage = () => {
                     src={displayImage}
                     alt={user.name}
                     fill
+                    loading="eager"
+                    unoptimized
                     className="object-cover rounded-full"
                   />
                 ) : (
@@ -224,7 +228,7 @@ const CustomerProfilePage = () => {
               </div>
               <p className="text-lg font-semibold">{user.name}</p>
               <Badge variant="secondary" className="shrink-0">
-                {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                {displayRole.charAt(0).toUpperCase() + displayRole.slice(1)}
               </Badge>
             </div>
 
