@@ -86,10 +86,11 @@ const BookingCard = ({ service }: { service: Service }) => {
       return
     }
 
-    setSubmitting(true)
+      setSubmitting(true)
     try {
       await createAppointment({
         serviceId: service._id,
+        customerId: session!.user.id,
         appointmentDate: new Date(`${appointmentDate}T00:00:00`).toISOString(),
         timeSlot,
         ...(message.trim() ? { message: message.trim() } : {}),
