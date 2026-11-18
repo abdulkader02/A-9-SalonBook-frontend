@@ -11,8 +11,6 @@ import { Separator } from "@/components/ui/separator";
 const quickLinks = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Browse Services" },
-  { href: "/sign-in", label: "Sign In" },
-  { href: "/sign-up", label: "Sign Up" },
 ];
 
 const socialLinks = ["Facebook", "Instagram", "Twitter"];

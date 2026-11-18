@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signIn, signUp } from "@/lib/auth-client";
-import { Eye, EyeOff, Scissors, Trash2, Upload, User } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { signIn, signUp } from "@/lib/auth-client"
+import { Eye, EyeOff, Scissors, Trash2, Upload, User } from "lucide-react"
+import { toast } from "sonner"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -15,13 +15,16 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
 
 const passwordRules = [
-  { label: "At least 6 characters", test: (value: string) => value.length >= 6 },
+  {
+    label: "At least 6 characters",
+    test: (value: string) => value.length >= 6,
+  },
   {
     label: "One uppercase letter",
     test: (value: string) => /[A-Z]/.test(value),
@@ -30,119 +33,123 @@ const passwordRules = [
     label: "One lowercase letter",
     test: (value: string) => /[a-z]/.test(value),
   },
-];
+]
 
 const SignUpForm = () => {
-  const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   // Selected image file + its local preview + the ImgBB URL once uploaded.
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   const validatePassword = (password: string) => {
-    const failed = passwordRules.find((rule) => !rule.test(password));
+    const failed = passwordRules.find((rule) => !rule.test(password))
     if (failed) {
-      toast.error(`Password must contain ${failed.label.toLowerCase()}.`);
-      return false;
+      toast.error(`Password must contain ${failed.label.toLowerCase()}.`)
+      return false
     }
-    return true;
-  };
+    return true
+  }
 
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0]
+    if (imagePreview) URL.revokeObjectURL(imagePreview)
 
     if (!file) {
-      setImageFile(null);
-      setImagePreview(null);
-      setImageUrl(undefined);
-      return;
+      setImageFile(null)
+      setImagePreview(null)
+      setImageUrl(undefined)
+      return
     }
 
     // Accept image files only
     if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file.");
-      event.target.value = "";
-      setImageFile(null);
-      setImagePreview(null);
-      setImageUrl(undefined);
-      return;
+      toast.error("Please select an image file.")
+      event.target.value = ""
+      setImageFile(null)
+      setImagePreview(null)
+      setImageUrl(undefined)
+      return
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY
     if (!apiKey) {
-      toast.error("Image upload is unavailable: missing ImgBB API key.");
-      event.target.value = "";
-      setImageFile(null);
-      setImagePreview(null);
-      return;
+      toast.error("Image upload is unavailable: missing ImgBB API key.")
+      event.target.value = ""
+      setImageFile(null)
+      setImagePreview(null)
+      return
     }
 
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-    setImageUrl(undefined);
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+    setImageUrl(undefined)
 
     // Upload to ImgBB; only the returned URL is kept for registration.
-    setUploadingImage(true);
+    setUploadingImage(true)
     try {
-      const formData = new FormData();
-      formData.append("image", file);
+      const formData = new FormData()
+      formData.append("image", file)
 
-      const res = await fetch(
-        `https://api.imgbb.com/1/upload?key=${apiKey}`,
-        { method: "POST", body: formData }
-      );
-      const result = await res.json().catch(() => null);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+        method: "POST",
+        body: formData,
+      })
+      const result = await res.json().catch(() => null)
 
       if (!res.ok || !result?.data?.url) {
         toast.error(
           result?.error?.message ?? "Image upload failed. Please try again."
-        );
-        return;
+        )
+        return
       }
 
-      setImageUrl(result.data.url);
+      setImageUrl(result.data.url)
     } catch {
-      toast.error("Image upload failed. Please try again.");
+      toast.error("Image upload failed. Please try again.")
     } finally {
-      setUploadingImage(false);
+      setUploadingImage(false)
     }
-  };
+  }
 
   const clearImage = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImageFile(null);
-    setImagePreview(null);
-    setImageUrl(undefined);
-  };
+    if (imagePreview) URL.revokeObjectURL(imagePreview)
+    setImageFile(null)
+    setImagePreview(null)
+    setImageUrl(undefined)
+  }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    event.preventDefault()
 
-    const formData = new FormData(event.currentTarget);
-    const { name, email, password } = Object.fromEntries(formData.entries()) as {
-      name: string;
-      email: string;
-      password: string;
-    };
+    const formData = new FormData(event.currentTarget)
+    const { name, email, password } = Object.fromEntries(
+      formData.entries()
+    ) as {
+      name: string
+      email: string
+      password: string
+    }
 
-    if (!validatePassword(password)) return;
+    if (!validatePassword(password)) return
 
     // An image is optional, but a selected image must be fully uploaded first.
     if (uploadingImage) {
-      toast.error("Please wait for the image to finish uploading.");
-      return;
+      toast.error("Please wait for the image to finish uploading.")
+      return
     }
     if (imageFile && !imageUrl) {
-      toast.error("Image upload failed. Please try again or remove the image.");
-      return;
+      toast.error("Image upload failed. Please try again or remove the image.")
+      return
     }
 
-    setSubmitting(true);
+    setSubmitting(true)
     try {
       const result = await signUp.email({
         name,
@@ -151,19 +158,36 @@ const SignUpForm = () => {
         // Only the real ImgBB URL is sent — never the local preview.
         ...(imageUrl ? { image: imageUrl } : {}),
         callbackURL: "/",
-      });
+      })
       if (result.error) {
-        toast.error(result.error.message ?? "Registration failed. Please try again.");
-        return;
+        toast.error(
+          result.error.message ?? "Registration failed. Please try again."
+        )
+        return
       }
-      toast.success("Account created successfully!");
-      router.push("/");
+      toast.success("Account created successfully!")
+      router.push("/")
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.")
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
+  const handleGoogleSignUp = async () => {
+    try {
+      const { error } = await signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      })
+
+      if (error) {
+        toast.error("Google sign-up is currently unavailable.")
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error("Something went wrong. Please try again.")
+    }
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-7xl items-center justify-center px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
@@ -280,7 +304,9 @@ const SignUpForm = () => {
                 ) : null}
               </div>
               {uploadingImage ? (
-                <p className="text-xs text-muted-foreground">Uploading image...</p>
+                <p className="text-xs text-muted-foreground">
+                  Uploading image...
+                </p>
               ) : null}
               {imageFile && !uploadingImage && !imageUrl ? (
                 <p className="text-xs text-destructive">
@@ -289,7 +315,11 @@ const SignUpForm = () => {
               ) : null}
             </div>
 
-            <Button type="submit" className="w-full" disabled={submitting || uploadingImage}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={submitting || uploadingImage}
+            >
               {submitting ? "Creating Account..." : "Sign Up"}
             </Button>
           </form>
@@ -302,12 +332,7 @@ const SignUpForm = () => {
             type="button"
             variant="outline"
             className="w-full"
-            onClick={async () => {
-              const result = await signIn.social({ provider: "google" });
-              if (result.error) {
-                toast.error("Google sign-up is currently unavailable.");
-              }
-            }}
+            onClick={handleGoogleSignUp}
           >
             Continue with Google
           </Button>
@@ -325,7 +350,7 @@ const SignUpForm = () => {
         </CardFooter>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default SignUpForm;
+export default SignUpForm

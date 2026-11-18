@@ -51,13 +51,23 @@ const SignInForm = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    // TODO: verify Google OAuth is configured in Better Auth before release
-    const result = await signIn.social({ provider: "google" });
-    if (result.error) {
-      toast.error("Google sign-in is currently unavailable.");
+  
+const handleGoogleSignIn = async () => {
+  try {
+    const { error } = await signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
+
+    if (error) {
+      toast.error("Google sign-in failed. Please try again.");
+      console.error("Google sign-in error:", error);
     }
-  };
+  } catch (error) {
+    console.error("Unexpected Google sign-in error:", error);
+    toast.error("Something went wrong. Please try again.");
+  }
+};
 
   return (
     <div className="mx-auto flex w-full max-w-7xl items-center justify-center px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
