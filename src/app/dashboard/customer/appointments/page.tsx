@@ -93,7 +93,7 @@ const MyAppointmentsPage = () => {
 
   if (sessionLoading || loading) {
     return (
-      <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         {/* Skeleton header */}
         <div className="flex flex-col gap-3">
           <div className="h-8 w-1/3 animate-pulse rounded-lg bg-muted" />
@@ -130,7 +130,7 @@ const MyAppointmentsPage = () => {
 
   if (errorMessage) {
     return (
-      <section className="mx-auto max-w-md px-4 py-16 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
           <span className="flex size-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
             <AlertCircle className="size-5" />
@@ -167,7 +167,7 @@ const MyAppointmentsPage = () => {
   }
 
   return (
-    <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+    <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
       <div className="flex flex-col gap-3">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           My Appointments
@@ -177,7 +177,7 @@ const MyAppointmentsPage = () => {
         </p>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:gap-5">
+      <div className="mt-8 grid grid-cols-1 gap-5 sm:gap-6">
         {appointments.map((appointment) => (
           <article
             key={appointment._id}
