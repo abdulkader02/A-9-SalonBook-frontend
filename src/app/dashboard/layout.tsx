@@ -14,8 +14,8 @@ export default function DashboardLayout({
     <SidebarProvider defaultOpen={true}>
       <div className="flex flex-col min-h-svh">
         <DashboardSidebar />
-        <main className="flex-1 md:pl-64 overflow-y-auto">
-          <header className="flex h-14 w-full items-center justify-between border-b bg-background px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <main className="flex-1 h-full md:pl-64 overflow-y-auto">
+          <header className="flex h-14 w-full items-center border-b bg-background px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <SidebarTrigger aria-label="Toggle sidebar" />
           </header>
           {children}

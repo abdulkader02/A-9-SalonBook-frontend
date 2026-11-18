@@ -149,7 +149,7 @@ const MyAppointmentsPage = () => {
 
   if (appointments.length === 0) {
     return (
-      <section className="mx-auto max-w-md px-4 py-16 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
           <span className="flex size-11 items-center justify-center rounded-xl bg-accent text-accent-foreground">
             <Calendar className="size-5" />

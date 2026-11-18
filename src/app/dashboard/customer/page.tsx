@@ -84,7 +84,7 @@ const CustomerOverviewPage = () => {
         </div>
 
         {/* Skeleton stat cards */}
-        <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
           {[1, 2, 3, 4].map((index) => (
             <div
               key={index}
@@ -132,7 +132,7 @@ const CustomerOverviewPage = () => {
         </p>
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
+      <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
         {[
           {
             label: "Total Appointment Requests",
