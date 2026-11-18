@@ -29,7 +29,7 @@ export default function RootLayout({
         geist.variable
       )}
     >
-      <body className="flex min-h-screen flex-col overflow-x-hidden">
+      <body suppressHydrationWarning className="flex min-h-screen flex-col overflow-x-hidden">
         <ThemeProvider>
           {children}
           <Toaster />
