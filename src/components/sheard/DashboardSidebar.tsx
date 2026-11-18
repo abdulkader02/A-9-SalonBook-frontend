@@ -7,7 +7,6 @@ import {
   CreditCard,
   LayoutDashboard,
   LogOut,
-  Menu,
   Scissors,
   Store,
   UserRound,
@@ -248,8 +247,8 @@ const DashboardSidebar = () => {
         </SidebarFooter>
       </Sidebar>
 
-      {/* Mobile header with trigger */}
-      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b bg-background px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden">
+      {/* Visible dashboard header with toggle (desktop + mobile) */}
+      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b bg-background px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <SidebarBrand />
         <SidebarTrigger aria-label="Toggle sidebar" />
       </header>

@@ -10,7 +10,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <DashboardSidebar />
       {/* Offset for the fixed 16rem sidebar on md+; on mobile the sidebar is a
           drawer with its own in-flow top bar */}
-      <main className="flex-1 md:pl-64 overflow-y-auto">{children}</main>
+      <main className="flex-1 h-full md:pl-64 overflow-y-auto">{children}</main>
     </div>
   )
 }
