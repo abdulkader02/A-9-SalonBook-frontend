@@ -1,13 +1,16 @@
 
 import type { Service } from "@/lib/type/services";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+import { isService, isServiceList } from "@/lib/type/services";
+import { ApiError, apiRequest, UNEXPECTED_RESPONSE_MESSAGE } from "@/lib/api";
 
 type GetServicesParams = {
   search?: string;
   category?: string;
   sort?: string;
 };
+
+const unexpectedResponse = () =>
+  new ApiError(500, UNEXPECTED_RESPONSE_MESSAGE);
 
 export const getServices = async ({
   search = "",
@@ -22,22 +25,22 @@ export const getServices = async ({
 
   const query = params.toString();
 
-  const res = await fetch(
-    `${API_BASE_URL}/services${query ? `?${query}` : ""}`,
+  const data = await apiRequest<unknown>(
+    `/services${query ? `?${query}` : ""}`,
     { cache: "no-store" }
   );
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch services (${res.status})`);
-  }
+  if (!isServiceList(data)) throw unexpectedResponse();
 
-  return res.json();
+  return data;
 };
 
 export const getServiceById = async (id: string): Promise<Service> => {
-    const res = await fetch(`${API_BASE_URL}/services/${id}`, { cache: "no-store" })
-    if (!res.ok) {
-        throw new Error(`Failed to fetch service (${res.status})`)
-    }
-    return res.json()
-}
+  const data = await apiRequest<unknown>(`/services/${encodeURIComponent(id)}`, {
+    cache: "no-store",
+  });
+
+  if (!isService(data)) throw unexpectedResponse();
+
+  return data;
+};

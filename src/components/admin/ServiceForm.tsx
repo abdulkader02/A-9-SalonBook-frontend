@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { useImgBBUpload } from "@/lib/hooks/useImgBBUpload"
+import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+
+import { useImgBBUpload } from "@/lib/hooks/useImgBBUpload"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -11,7 +13,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select"
-import { Service } from "@/lib/type/services"
+import type { Service, ServiceStatus } from "@/lib/type/services"
 
 interface ServiceFormProps {
   initialValues?: Partial<Service>
@@ -20,99 +22,162 @@ interface ServiceFormProps {
   isSubmitting?: boolean
 }
 
-const ServiceForm: React.FC<ServiceFormProps> = ({
+type FieldName = "serviceName" | "category" | "description" | "price" | "duration"
+
+interface FormValues {
+  serviceName: string
+  category: string
+  description: string
+  price: string
+  duration: string
+  status: ServiceStatus
+}
+
+type FieldErrors = Record<FieldName, string | null>
+
+const toFormValues = (initial?: Partial<Service>): FormValues => ({
+  serviceName: initial?.serviceName ?? "",
+  category: initial?.category ?? "",
+  description: initial?.description ?? "",
+  price: initial?.price !== undefined ? String(initial.price) : "",
+  duration: initial?.duration !== undefined ? String(initial.duration) : "",
+  status: initial?.status === "inactive" ? "inactive" : "active",
+})
+
+const validate = (values: FormValues): FieldErrors => {
+  const price = Number(values.price)
+  const duration = Number(values.duration)
+  const priceProvided = values.price.trim() !== ""
+  const durationProvided = values.duration.trim() !== ""
+
+  return {
+    serviceName: values.serviceName.trim() ? null : "Service name is required.",
+    category: values.category.trim() ? null : "Category is required.",
+    description: values.description.trim() ? null : "Description is required.",
+    price:
+      priceProvided && Number.isFinite(price) && price > 0
+        ? null
+        : "Price must be a positive number.",
+    duration:
+      durationProvided &&
+      Number.isFinite(duration) &&
+      Number.isInteger(duration) &&
+      duration > 0
+        ? null
+        : "Duration must be a positive whole number of minutes.",
+  }
+}
+
+const inputClassName =
+  "flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 transition-colors aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20"
+
+const ServiceForm = ({
   initialValues,
   onSubmit,
   submitLabel,
   isSubmitting = false,
-}) => {
-  const [formData, setFormData] = useState<Partial<Service>>(initialValues || {})
+}: ServiceFormProps) => {
+  const [values, setValues] = useState<FormValues>(() =>
+    toFormValues(initialValues)
+  )
+  const [touched, setTouched] = useState<Partial<Record<FieldName | "image", boolean>>>(
+    {}
+  )
+  const [submitted, setSubmitted] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   // useImgBBUpload handles the file upload internally and exposes upload state
-  const { imagePreview, imageUrl, uploadingImage, handleImageChange, clearImage } =
-    useImgBBUpload(initialValues?.image)
+  const {
+    imageFile,
+    imagePreview,
+    imageUrl,
+    uploadingImage,
+    imageError,
+    handleImageChange,
+    retryUpload,
+    clearImage,
+  } = useImgBBUpload(initialValues?.image)
+
+  const errors = validate(values)
+  const imageIsValid = Boolean(imageUrl) && !imageError
+  const isBusy = isSubmitting || saving
+
+  const showError = (field: FieldName | "image") => submitted || touched[field]
 
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, type } = event.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "number" ? Number(value) : value,
-    }))
+    const { name, value } = event.target
+    setValues((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const markTouched = (field: FieldName | "image") => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
   }
 
   const handleStatusChange = (newValue: string | null) => {
-    if (newValue !== null) {
-      setFormData((prev) => ({ ...prev, status: newValue as "active" | "inactive" }))
+    if (newValue === "active" || newValue === "inactive") {
+      setValues((prev) => ({ ...prev, status: newValue }))
     }
   }
 
   const handleClearImage = () => {
     clearImage()
-    setFormData((prev) => ({ ...prev, image: undefined }))
+    markTouched("image")
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setSubmitted(true)
 
-    // Validation: all required fields must be present and valid
-    const price = Number(formData.price)
-    const duration = Number(formData.duration)
+    const hasFieldErrors = Object.values(errors).some(Boolean)
 
-    if (!formData.serviceName?.trim() || !formData.category?.trim() || !formData.description?.trim()) {
-      toast.error("Please fill in all text fields.")
-      return
-    }
-    if (!formData.image && imageUrl === undefined) {
-      // imageUrl is set by hook
-      if (!imageUrl) {
-        toast.error("Please upload an image for the service.")
-        return
-      }
-    }
-    if (isNaN(price) || price <= 0) {
-      toast.error("Price must be a positive number.")
-      return
-    }
-    if (isNaN(duration) || duration <= 0) {
-      toast.error("Duration must be a positive number (minutes).")
-      return
-    }
-    if (uploadingImage) {
-      toast.error("Image is still uploading. Please wait.")
+    if (hasFieldErrors || uploadingImage || !imageIsValid || !imageUrl) {
+      toast.error("Please fix the highlighted fields before saving.")
       return
     }
 
-    // Combine form data with the uploaded image URL
     const payload: Partial<Service> = {
-      ...formData,
-      image: imageUrl ?? formData.image,
-      status: (formData.status as "active" | "inactive") ?? "active",
+      serviceName: values.serviceName.trim(),
+      category: values.category.trim(),
+      description: values.description.trim(),
+      price: Number(values.price),
+      duration: Number(values.duration),
+      image: imageUrl,
+      status: values.status,
     }
 
-    await onSubmit(payload)
+    // Keeps every value the user typed if the request fails - the parent only
+    // shows an error toast, it never resets this form.
+    setSaving(true)
+    try {
+      await onSubmit(payload)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       {/* Image upload area */}
       <div>
         <label className="block text-sm font-medium mb-1.5">
-          Service Image
+          Service Image <span className="text-destructive">*</span>
         </label>
         <div className="flex items-center gap-3">
           {imagePreview ? (
             <div className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imagePreview}
                 alt="Service preview"
-                className="w-32 h-20 object-cover rounded-xl border"
+                className="h-20 w-32 rounded-xl border object-cover"
               />
               <button
                 type="button"
                 onClick={handleClearImage}
-                className="absolute -top-2 -right-2 size-6 rounded-full bg-destructive text-white flex items-center justify-center text-xs hover:bg-destructive/80"
+                aria-label="Remove image"
+                className="absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full bg-destructive text-xs text-white hover:bg-destructive/80"
               >
                 ×
               </button>
@@ -120,7 +185,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({
           ) : (
             <label
               htmlFor="service-image"
-              className="cursor-pointer flex h-20 w-32 items-center justify-center rounded-xl border border-dashed bg-muted text-xs text-muted-foreground hover:bg-muted/60"
+              className="flex h-20 w-32 cursor-pointer items-center justify-center rounded-xl border border-dashed bg-muted text-xs text-muted-foreground hover:bg-muted/60"
             >
               Upload image
             </label>
@@ -129,97 +194,162 @@ const ServiceForm: React.FC<ServiceFormProps> = ({
             type="file"
             id="service-image"
             onChange={handleImageChange}
+            onBlur={() => markTouched("image")}
             className="hidden"
             accept="image/*"
           />
-          {uploadingImage && (
-            <span className="text-xs text-muted-foreground">Uploading...</span>
-          )}
         </div>
+
+        {uploadingImage && (
+          <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Loader2 className="size-3.5 animate-spin" />
+            Uploading image...
+          </p>
+        )}
+
+        {!uploadingImage && imageError && (
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <p className="text-xs text-destructive">{imageError}</p>
+            {imageFile && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  void retryUpload()
+                }}
+              >
+                Retry
+              </Button>
+            )}
+          </div>
+        )}
+
+        {!uploadingImage && !imageError && !imageUrl && showError("image") && (
+          <p className="mt-1.5 text-xs text-destructive">
+            Service image is required.
+          </p>
+        )}
       </div>
 
       {/* Text fields */}
       <div>
         <label htmlFor="serviceName" className="block text-sm font-medium mb-1.5">
-          Service Name
+          Service Name <span className="text-destructive">*</span>
         </label>
         <input
           type="text"
           id="serviceName"
           name="serviceName"
-          value={formData.serviceName !== undefined ? formData.serviceName : ""}
+          value={values.serviceName}
           onChange={handleInputChange}
+          onBlur={() => markTouched("serviceName")}
           placeholder="e.g. Classic Haircut"
-          className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 transition-colors"
-          required
+          aria-invalid={showError("serviceName") && Boolean(errors.serviceName)}
+          aria-describedby="serviceName-error"
+          className={inputClassName}
         />
+        {showError("serviceName") && errors.serviceName && (
+          <p id="serviceName-error" className="mt-1.5 text-xs text-destructive">
+            {errors.serviceName}
+          </p>
+        )}
       </div>
 
       <div>
         <label htmlFor="category" className="block text-sm font-medium mb-1.5">
-          Category
+          Category <span className="text-destructive">*</span>
         </label>
         <input
           type="text"
           id="category"
           name="category"
-          value={formData.category !== undefined ? formData.category : ""}
+          value={values.category}
           onChange={handleInputChange}
+          onBlur={() => markTouched("category")}
           placeholder="e.g. Haircut & Styling"
-          className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 transition-colors"
-          required
+          aria-invalid={showError("category") && Boolean(errors.category)}
+          aria-describedby="category-error"
+          className={inputClassName}
         />
+        {showError("category") && errors.category && (
+          <p id="category-error" className="mt-1.5 text-xs text-destructive">
+            {errors.category}
+          </p>
+        )}
       </div>
 
       <div>
         <label htmlFor="description" className="block text-sm font-medium mb-1.5">
-          Description
+          Description <span className="text-destructive">*</span>
         </label>
         <textarea
           id="description"
           name="description"
-          value={formData.description !== undefined ? formData.description : ""}
+          value={values.description}
           onChange={handleInputChange}
+          onBlur={() => markTouched("description")}
           placeholder="Describe the service..."
           rows={3}
-          className="flex min-h-[100px] w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 transition-colors resize-none"
-          required
+          aria-invalid={showError("description") && Boolean(errors.description)}
+          aria-describedby="description-error"
+          className="flex min-h-[100px] w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 transition-colors resize-none aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20"
         />
+        {showError("description") && errors.description && (
+          <p id="description-error" className="mt-1.5 text-xs text-destructive">
+            {errors.description}
+          </p>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="price" className="block text-sm font-medium mb-1.5">
-            Price ($)
+            Price ($) <span className="text-destructive">*</span>
           </label>
           <input
             type="number"
             id="price"
             name="price"
-            value={formData.price !== undefined ? String(formData.price) : ""}
+            value={values.price}
             onChange={handleInputChange}
+            onBlur={() => markTouched("price")}
             placeholder="e.g. 45"
             step="0.01"
             min="0"
-            className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 transition-colors"
-            required
+            aria-invalid={showError("price") && Boolean(errors.price)}
+            aria-describedby="price-error"
+            className={inputClassName}
           />
+          {showError("price") && errors.price && (
+            <p id="price-error" className="mt-1.5 text-xs text-destructive">
+              {errors.price}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="duration" className="block text-sm font-medium mb-1.5">
-            Duration (minutes)
+            Duration (minutes) <span className="text-destructive">*</span>
           </label>
           <input
             type="number"
             id="duration"
             name="duration"
-            value={formData.duration !== undefined ? String(formData.duration) : ""}
+            value={values.duration}
             onChange={handleInputChange}
+            onBlur={() => markTouched("duration")}
             placeholder="e.g. 60"
+            step="1"
             min="0"
-            className="flex h-10 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 transition-colors"
-            required
+            aria-invalid={showError("duration") && Boolean(errors.duration)}
+            aria-describedby="duration-error"
+            className={inputClassName}
           />
+          {showError("duration") && errors.duration && (
+            <p id="duration-error" className="mt-1.5 text-xs text-destructive">
+              {errors.duration}
+            </p>
+          )}
         </div>
       </div>
 
@@ -228,26 +358,14 @@ const ServiceForm: React.FC<ServiceFormProps> = ({
         <label htmlFor="status" className="block text-sm font-medium mb-1.5">
           Status
         </label>
-        <Select
-          value={formData.status || "active"}
-          onValueChange={handleStatusChange}
-        >
-          <SelectTrigger id="status" className="w-full justify-between gap-2 rounded-lg border border-input px-3 py-1 text-sm">
+        <Select value={values.status} onValueChange={handleStatusChange}>
+          <SelectTrigger
+            id="status"
+            className="w-full justify-between gap-2 rounded-lg border border-input px-3 py-1 text-sm"
+          >
             <SelectValue placeholder="Select status" className="text-left">
-              <span className="capitalize">{formData.status || "Active"}</span>
+              <span className="capitalize">{values.status}</span>
             </SelectValue>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-4 pointer-events-none text-muted-foreground"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 9l6 6 6-6" />
-            </svg>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="active">Active</SelectItem>
@@ -257,21 +375,14 @@ const ServiceForm: React.FC<ServiceFormProps> = ({
       </div>
 
       {/* Submit button */}
-      <Button type="submit" disabled={isSubmitting || uploadingImage} className="w-full">
-        {isSubmitting ? (
+      <Button
+        type="submit"
+        disabled={isBusy || uploadingImage}
+        className="w-full"
+      >
+        {isBusy ? (
           <span className="inline-flex items-center justify-center gap-1.5">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-4 animate-spin"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-            </svg>
+            <Loader2 className="size-4 animate-spin" />
             Saving...
           </span>
         ) : (

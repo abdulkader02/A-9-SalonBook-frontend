@@ -167,14 +167,10 @@ const ServicesBrowser = ({ services }: { services: Service[] }) => {
           <span className="flex size-11 items-center justify-center rounded-xl bg-accent text-accent-foreground">
             <Search className="size-5" />
           </span>
-          <p className="font-semibold">
-            {hasFilters
-              ? "No services match your search"
-              : "No services available yet"}
-          </p>
+          <p className="font-semibold">No services found</p>
           <p className="max-w-sm text-sm text-muted-foreground">
             {hasFilters
-              ? "Try a different search term or category, or clear the filters."
+              ? "No services match your search or filters. Try a different term or clear the filters."
               : "Check back soon - new salon services are added regularly."}
           </p>
           {hasFilters && (

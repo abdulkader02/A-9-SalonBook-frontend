@@ -8,6 +8,7 @@ import { toast } from "sonner"
 
 import { useSession } from "@/lib/auth-client"
 import { getMyAppointments, cancelAppointment } from "@/lib/api/appointments"
+import { createCheckoutSession } from "@/lib/api/payment"
 import type { Appointment } from "@/lib/type/appointments"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -41,6 +42,7 @@ const MyAppointmentsPage = () => {
   const [errorMessage, setErrorMessage] = useState("")
 
   const [cancellingId, setCancellingId] = useState<string | null>(null)
+  const [payingId, setPayingId] = useState<string | null>(null)
 
   const [appointmentToCancel, setAppointmentToCancel] = useState<string | null>(
     null
@@ -68,6 +70,26 @@ const MyAppointmentsPage = () => {
 
     fetchAppointments()
   }, [sessionLoading, session])
+
+  const handlePay = async (appointmentId: string) => {
+    if (payingId) return
+
+    setPayingId(appointmentId)
+    try {
+      const { url } = await createCheckoutSession(appointmentId)
+
+      // Full browser redirect to Stripe's hosted Checkout page.
+      // eslint-disable-next-line react-hooks/immutability -- redirecting the whole browser is intentional here
+      window.location.href = url
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to start the payment. Please try again."
+      )
+      setPayingId(null)
+    }
+  }
 
   const handleCancel = async (appointmentId: string) => {
     setCancellingId(appointmentId)
@@ -258,7 +280,13 @@ const MyAppointmentsPage = () => {
 
                 {appointment.status === "confirmed" &&
                   appointment.paymentStatus === "unpaid" && (
-                    <Button size="sm">Pay Now</Button>
+                    <Button
+                      size="sm"
+                      disabled={payingId === appointment._id}
+                      onClick={() => handlePay(appointment._id)}
+                    >
+                      {payingId === appointment._id ? "Redirecting..." : "Pay Now"}
+                    </Button>
                   )}
               </div>
             </div>

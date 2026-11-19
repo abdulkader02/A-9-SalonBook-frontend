@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 
+import RetryButton from "@/components/services/RetryButton";
 import { getServices } from "@/lib/api/services";
+import { ApiError } from "@/lib/api";
 import type { Service } from "@/lib/type/services";
-import { Button } from "@/components/ui/button";
 import ServicesBrowser from "@/components/services/ServicesBrowser";
 
 // Always render against fresh data from the backend.
@@ -26,8 +26,12 @@ const ServicesPage = async ({ searchParams }: ServicesPageProps) => {
 
   try {
     services = await getServices({ search, category, sort });
-  } catch {
-    errorMessage = "We couldn't load the services right now.";
+  } catch (error) {
+    if (error instanceof ApiError) {
+      errorMessage = error.message;
+    } else {
+      errorMessage = "We couldn't load the services right now.";
+    }
   }
 
   return (
@@ -52,9 +56,7 @@ const ServicesPage = async ({ searchParams }: ServicesPageProps) => {
             <p className="max-w-sm text-sm text-muted-foreground">
               Please check your connection and try again.
             </p>
-            <Button variant="outline" render={<Link href="/services" />}>
-              Try again
-            </Button>
+            <RetryButton />
           </div>
         ) : (
           <ServicesBrowser services={services} />

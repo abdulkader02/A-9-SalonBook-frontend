@@ -1,85 +1,61 @@
 import type { Service } from "@/lib/type/services"
+import { isService, isServiceList } from "@/lib/type/services"
+import { ApiError, apiRequest, UNEXPECTED_RESPONSE_MESSAGE } from "@/lib/api"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+const unexpectedResponse = () => new ApiError(500, UNEXPECTED_RESPONSE_MESSAGE)
 
 export const getAdminServices = async (): Promise<Service[]> => {
-  const res = await fetch(`${API_BASE_URL}/admin/services`, {
+  const data = await apiRequest<unknown>("/admin/services", {
     cache: "no-store",
-    credentials: "include",
   })
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch admin services (${res.status})`)
-  }
+  if (!isServiceList(data)) throw unexpectedResponse()
 
-  return res.json()
+  return data
 }
 
 export const createService = async (
   payload: Omit<Service, "_id" | "createdAt" | "updatedAt">
 ): Promise<Service> => {
-  const res = await fetch(`${API_BASE_URL}/services`, {
+  const data = await apiRequest<unknown>("/services", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify(payload),
   })
 
-  if (!res.ok) {
-    let message = "Failed to create service. Please try again."
-    try {
-      const data = await res.json()
-      if (data?.message) message = data.message
-    } catch {
-      // Response was not JSON
-    }
-    throw new Error(message)
-  }
+  if (!isService(data)) throw unexpectedResponse()
 
-  return res.json()
+  return data
 }
 
 export const updateService = async (
   id: string,
   payload: Partial<Omit<Service, "_id" | "createdAt" | "updatedAt">>
 ): Promise<Service> => {
-  const res = await fetch(`${API_BASE_URL}/services/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(payload),
-  })
-
-  if (!res.ok) {
-    let message = "Failed to update service. Please try again."
-    try {
-      const data = await res.json()
-      if (data?.message) message = data.message
-    } catch {
-      // Response was not JSON
+  const data = await apiRequest<unknown>(
+    `/services/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     }
-    throw new Error(message)
-  }
+  )
 
-  return res.json()
+  if (!isService(data)) throw unexpectedResponse()
+
+  return data
 }
 
 export const deleteService = async (id: string): Promise<{ message: string }> => {
-  const res = await fetch(`${API_BASE_URL}/services/${id}`, {
-    method: "DELETE",
-    credentials: "include",
-  })
+  const data = await apiRequest<{ message?: unknown }>(
+    `/services/${encodeURIComponent(id)}`,
+    { method: "DELETE" }
+  )
 
-  if (!res.ok) {
-    let message = "Failed to delete service. Please try again."
-    try {
-      const data = await res.json()
-      if (data?.message) message = data.message
-    } catch {
-      // Response was not JSON
-    }
-    throw new Error(message)
+  return {
+    message:
+      typeof data?.message === "string"
+        ? data.message
+        : "Service deleted successfully",
   }
-
-  return res.json()
 }

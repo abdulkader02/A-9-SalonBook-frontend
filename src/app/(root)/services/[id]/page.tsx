@@ -1,18 +1,43 @@
 import { headers } from "next/headers"
 import Link from "next/link"
 import Image from "next/image"
-import { redirect } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { AlertCircle, ArrowLeft, Clock, Scissors } from "lucide-react"
 
 import { auth } from "@/lib/auth"
+import { ApiError } from "@/lib/api"
 import { getServiceById } from "@/lib/api/services"
 import type { Service } from "@/lib/type/services"
 import BookingCard from "@/components/services/BookingCard"
+import RetryButton from "@/components/services/RetryButton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
+// 24-character hex ObjectId pattern used by MongoDB.
+const OBJECT_ID_PATTERN = /^[0-9a-fA-F]{24}$/
+
 // Auth-dependent and always fetched fresh.
 export const dynamic = "force-dynamic"
+
+const emptyState = ({
+  title,
+  description,
+}: {
+  title: string
+  description: React.ReactNode
+}) => (
+  <section className="mx-auto flex w-full max-w-7xl flex-col items-center gap-3 px-4 py-24 text-center sm:px-6 lg:px-8">
+    <span className="flex size-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+      <AlertCircle className="size-5" />
+    </span>
+    <h1 className="text-xl font-semibold">{title}</h1>
+    <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
+    <RetryButton />
+    <Button variant="outline" className="mt-3" render={<Link href="/services" />}>
+      Browse Services
+    </Button>
+  </section>
+)
 
 const ServiceDetailsPage = async ({
   params,
@@ -27,36 +52,46 @@ const ServiceDetailsPage = async ({
     redirect(`/sign-in?callbackUrl=${encodeURIComponent(`/services/${id}`)}`)
   }
 
+  // An invalid ObjectId never points at a service.
+  if (!OBJECT_ID_PATTERN.test(id)) {
+    notFound()
+  }
+
   let service: Service | null = null
-  let notFound = false
+  let failure: "not-found" | "error" | null = null
 
   try {
     service = await getServiceById(id)
   } catch (error) {
-    const message = error instanceof Error ? error.message : ""
-    // The backend returns 400 for an invalid ID and 404 for a missing service.
-    notFound = message.includes("(400)") || message.includes("(404)")
+    if (error instanceof ApiError && error.status === 404) {
+      failure = "not-found"
+    } else {
+      failure = "error"
+    }
   }
 
   if (!service) {
-    return (
-      <section className="mx-auto flex w-full max-w-7xl flex-col items-center gap-3 px-4 py-24 text-center sm:px-6 lg:px-8">
-        <span className="flex size-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
-          <AlertCircle className="size-5" />
-        </span>
-        <h1 className="text-xl font-semibold">
-          {notFound ? "Service not found" : "Something went wrong"}
-        </h1>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          {notFound
-            ? "The service you are looking for does not exist or may have been removed."
-            : "We couldn't load this service right now. Please try again."}
-        </p>
-        <Button variant="outline" render={<Link href="/services" />}>
-          Browse Services
-        </Button>
-      </section>
-    )
+    return emptyState({
+      title:
+        failure === "not-found" ? "Service not found" : "Something went wrong",
+      description:
+        failure === "not-found"
+          ? "The service you are looking for does not exist or may have been removed."
+          : "We couldn't load this service right now. Please try again.",
+    })
+  }
+
+  // Inactive services cannot be booked and don't appear publicly.
+  if (service.status === "inactive") {
+    return emptyState({
+      title: "This service is currently unavailable",
+      description: (
+        <>
+          The salon has deactivated this service, so it cannot be booked right
+          now.
+        </>
+      ),
+    })
   }
 
   return (
@@ -92,9 +127,6 @@ const ServiceDetailsPage = async ({
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{service.category}</Badge>
-              {service.status === "inactive" && (
-                <Badge variant="outline">Currently unavailable</Badge>
-              )}
             </div>
 
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
