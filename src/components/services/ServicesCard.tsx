@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const ServicesCard = ({ service }: { service: Service }) => {
+  // console.log(service.image);
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary/40">
       {/* Image */}
@@ -16,6 +17,7 @@ const ServicesCard = ({ service }: { service: Service }) => {
             src={service.image}
             alt={service.serviceName}
             fill
+            unoptimized
             sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw"
             className="object-cover"
           />

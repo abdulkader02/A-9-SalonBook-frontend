@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
@@ -6,6 +7,10 @@ import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
+export const metadata: Metadata = {
+  title: "SalonBook",
+  description: "Book your favorite salon services with SalonBook.",
+}
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -30,7 +35,10 @@ export default function RootLayout({
         geist.variable
       )}
     >
-      <body suppressHydrationWarning className="flex min-h-screen flex-col overflow-x-hidden">
+      <body
+        suppressHydrationWarning
+        className="flex min-h-screen flex-col overflow-x-hidden"
+      >
         <ThemeProvider>
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
