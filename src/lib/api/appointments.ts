@@ -1,6 +1,7 @@
 import type {
   CreateAppointmentPayload,
   Appointment,
+  AdminAppointment,
 } from "@/lib/type/appointments"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -54,6 +55,51 @@ export const cancelAppointment = async (
 
   if (!res.ok) {
     let message = "Failed to cancel appointment. Please try again."
+    try {
+      const data = await res.json()
+      if (data?.message) message = data.message
+    } catch {
+      // Response was not JSON
+    }
+    throw new Error(message)
+  }
+
+  return res.json()
+}
+
+export const getAdminAppointments = async (): Promise<AdminAppointment[]> => {
+  const res = await fetch(`${API_BASE_URL}/admin/appointments`, {
+    cache: "no-store",
+    credentials: "include",
+  })
+
+  if (!res.ok) {
+    let message = "Failed to fetch appointments. Please try again."
+    try {
+      const data = await res.json()
+      if (data?.message) message = data.message
+    } catch {
+      // Response was not JSON
+    }
+    throw new Error(message)
+  }
+
+  return res.json()
+}
+
+export const updateAppointmentStatus = async (
+  appointmentId: string,
+  status: "confirmed" | "cancelled"
+): Promise<{ message?: string }> => {
+  const res = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ status }),
+  })
+
+  if (!res.ok) {
+    let message = "Failed to update appointment. Please try again."
     try {
       const data = await res.json()
       if (data?.message) message = data.message
