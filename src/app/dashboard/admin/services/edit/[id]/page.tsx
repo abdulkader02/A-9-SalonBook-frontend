@@ -1,12 +1,12 @@
-// TODO: protect this route - admin role only
-// TODO: fetch service by id (params is a Promise in Next 16)
+import EditServiceClient from "./EditServiceClient"
 
-const UpdateServicePage = () => {
-  return (
-    <div>
-      <h1>Update Service</h1>
-    </div>
-  )
+const EditServicePage = async ({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) => {
+  const { id } = await params
+  return <EditServiceClient serviceId={id} />
 }
 
-export default UpdateServicePage
+export default EditServicePage

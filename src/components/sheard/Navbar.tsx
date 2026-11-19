@@ -49,9 +49,11 @@ const Navbar = () => {
 
   const user = session?.user
   const role = (user as { role?: string } | undefined)?.role ?? "customer"
-
   const dashboardPath =
     role === "admin" ? "/dashboard/admin" : "/dashboard/customer"
+    
+  const profilePath =
+    role === "admin" ? "/dashboard/admin/profile" : "/dashboard/customer/profile"
 
   // Active navigation
   const isActive = (href: string) => {
@@ -183,7 +185,7 @@ const Navbar = () => {
                   </Link>
 
                   <Link
-                    href="/dashboard/customer/profile"
+                    href={profilePath}
                     onClick={closeMenu}
                     className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
                   >
@@ -298,7 +300,7 @@ const Navbar = () => {
 
                   <Button
                     variant="outline"
-                    render={<Link href="/profile" />}
+                    render={<Link href={profilePath} />}
                     onClick={() => setMobileOpen(false)}
                   >
                     <UserRound />
