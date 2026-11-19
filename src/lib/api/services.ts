@@ -1,6 +1,10 @@
 
-import type { Service } from "@/lib/type/services";
-import { isService, isServiceList } from "@/lib/type/services";
+import type { FeaturedService, Service } from "@/lib/type/services";
+import {
+  isFeaturedServiceList,
+  isService,
+  isServiceList,
+} from "@/lib/type/services";
 import { ApiError, apiRequest, UNEXPECTED_RESPONSE_MESSAGE } from "@/lib/api";
 
 type GetServicesParams = {
@@ -41,6 +45,17 @@ export const getServiceById = async (id: string): Promise<Service> => {
   });
 
   if (!isService(data)) throw unexpectedResponse();
+
+  return data;
+};
+
+// Fetches up to 6 active services for the homepage featured section.
+export const getFeaturedServices = async (): Promise<FeaturedService[]> => {
+  const data = await apiRequest<unknown>("/services/featured", {
+    cache: "no-store",
+  });
+
+  if (!isFeaturedServiceList(data)) throw unexpectedResponse();
 
   return data;
 };

@@ -212,6 +212,7 @@ const MyAppointmentsPage = () => {
                   src={appointment.serviceImage}
                   alt={appointment.serviceName}
                   fill
+                  unoptimized
                   sizes="(min-width: 640px) 80px, 100vw"
                   className="object-cover"
                 />
