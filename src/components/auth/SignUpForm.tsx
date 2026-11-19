@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { signIn, signUp } from "@/lib/auth-client"
-import { Eye, EyeOff, Scissors, Trash2, Upload, User } from "lucide-react"
+import { getSafeCallbackUrl } from "@/lib/utils"
+import { ArrowLeft, Eye, EyeOff, Scissors, Trash2, Upload, User } from "lucide-react"
 import { toast } from "sonner"
 import { useState } from "react"
 
@@ -36,10 +37,17 @@ const passwordRules = [
   },
 ]
 
-const SignUpForm = () => {
+const SignUpForm = ({ callbackUrl }: { callbackUrl?: string }) => {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  // Only internal paths are accepted; otherwise keep the default redirect.
+  const redirectTo = getSafeCallbackUrl(callbackUrl) ?? "/"
+  const signInHref =
+    redirectTo === "/"
+      ? "/sign-in"
+      : `/sign-in?callbackUrl=${encodeURIComponent(redirectTo)}`
 
   // Profile image select/preview/upload - now shared with the Profile page via this hook.
   const {
@@ -50,6 +58,17 @@ const SignUpForm = () => {
     handleImageChange,
     clearImage,
   } = useImgBBUpload()
+
+  // Return to the previous page; fall back to the homepage when there is no
+  // history to go back to (e.g. the page was opened directly).
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back()
+      return
+    }
+
+    router.push("/")
+  }
 
   const validatePassword = (password: string) => {
     const failed = passwordRules.find((rule) => !rule.test(password))
@@ -92,7 +111,7 @@ const SignUpForm = () => {
         password,
         // Only the real ImgBB URL is sent — never the local preview.
         ...(imageUrl ? { image: imageUrl } : {}),
-        callbackURL: "/",
+        callbackURL: redirectTo,
       })
       if (result.error) {
         toast.error(
@@ -101,7 +120,8 @@ const SignUpForm = () => {
         return
       }
       toast.success("Account created successfully!")
-      router.push("/")
+      router.push(redirectTo)
+      router.refresh()
     } catch {
       toast.error("Something went wrong. Please try again.")
     } finally {
@@ -112,7 +132,7 @@ const SignUpForm = () => {
     try {
       const { error } = await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: redirectTo,
       })
 
       if (error) {
@@ -125,7 +145,19 @@ const SignUpForm = () => {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl items-center justify-center px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+    <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-center px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+      <div className="mb-3 flex w-full max-w-md">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 text-muted-foreground"
+          onClick={handleBack}
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </Button>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
           <span className="mb-1 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -276,7 +308,7 @@ const SignUpForm = () => {
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
-              href="/sign-in"
+              href={signInHref}
               className="font-medium text-primary hover:underline"
             >
               Sign In

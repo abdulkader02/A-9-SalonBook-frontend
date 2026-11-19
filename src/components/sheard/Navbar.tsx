@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useSession, signOut } from "@/lib/auth-client"
 import {
   Scissors,
@@ -39,6 +39,7 @@ const publicLinks = [
 
 const Navbar = () => {
   const pathname = usePathname()
+  const router = useRouter()
 
   // Better Auth session
   const { data: session, isPending } = useSession()
@@ -85,6 +86,8 @@ const Navbar = () => {
       setMobileOpen(false)
 
       toast.success("Signed out successfully.")
+      router.push("/sign-in")
+      router.refresh()
     } catch (error) {
       console.error("Unexpected sign out error:", error)
       toast.error("Something went wrong. Please try again.")

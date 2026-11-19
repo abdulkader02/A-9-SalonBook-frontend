@@ -24,7 +24,7 @@ const ServiceDetailsPage = async ({
   // Protected page: unauthenticated users are redirected to Sign In.
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) {
-    redirect("/sign-in")
+    redirect(`/sign-in?callbackUrl=${encodeURIComponent(`/services/${id}`)}`)
   }
 
   let service: Service | null = null

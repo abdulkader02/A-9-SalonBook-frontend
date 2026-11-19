@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
-import { Scissors } from "lucide-react";
+import { getSafeCallbackUrl } from "@/lib/utils";
+import { ArrowLeft, Scissors } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,9 +21,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
-const SignInForm = () => {
+const SignInForm = ({ callbackUrl }: { callbackUrl?: string }) => {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+
+  // Only internal paths are accepted; otherwise keep the default redirect.
+  const redirectTo = getSafeCallbackUrl(callbackUrl) ?? "/";
+  const signUpHref =
+    redirectTo === "/"
+      ? "/sign-up"
+      : `/sign-up?callbackUrl=${encodeURIComponent(redirectTo)}`;
+
+  // Return to the previous page; fall back to the homepage when there is no
+  // history to go back to (e.g. the page was opened directly).
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push("/");
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,7 +62,8 @@ const SignInForm = () => {
         return;
       }
       toast.success("Signed in successfully!");
-      router.push("/");
+      router.push(redirectTo);
+      router.refresh();
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -56,7 +76,7 @@ const handleGoogleSignIn = async () => {
   try {
     const { error } = await signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL: redirectTo,
     });
 
     if (error) {
@@ -70,7 +90,19 @@ const handleGoogleSignIn = async () => {
 };
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl items-center justify-center px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+    <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-center px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+      <div className="mb-3 flex w-full max-w-md">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 text-muted-foreground"
+          onClick={handleBack}
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </Button>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
           <span className="mb-1 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -127,7 +159,7 @@ const handleGoogleSignIn = async () => {
           <p className="text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link
-              href="/sign-up"
+              href={signUpHref}
               className="font-medium text-primary hover:underline"
             >
               Sign Up

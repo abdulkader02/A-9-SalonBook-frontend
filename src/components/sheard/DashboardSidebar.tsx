@@ -1,11 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   CalendarCheck,
   CreditCard,
   LayoutDashboard,
+  LogIn,
   LogOut,
   Scissors,
   Store,
@@ -16,15 +18,12 @@ import {
 import { toast } from "sonner"
 
 import { useSession, signOut } from "@/lib/auth-client"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 
 import {
   Sidebar,
@@ -149,13 +148,34 @@ const SidebarUser = ({
 }) => {
   const { state } = useSidebar()
   const { data: session, isPending } = useSession()
+  const router = useRouter()
+  const [signingOut, setSigningOut] = useState(false)
   const user = session?.user
   const role = (user as { role?: string } | undefined)?.role ?? "customer"
 
   const handleSignOut = async () => {
-    await signOut()
-    onNavigate?.()
-    toast.success("Signed out successfully")
+    if (signingOut) return
+
+    try {
+      setSigningOut(true)
+
+      // Clears the Better Auth session/cookie.
+      const { error } = await signOut()
+
+      if (error) {
+        toast.error(error.message ?? "Failed to sign out. Please try again.")
+        return
+      }
+
+      onNavigate?.()
+      toast.success("Signed out successfully")
+      router.push("/sign-in")
+      router.refresh()
+    } catch {
+      toast.error("Something went wrong. Please try again.")
+    } finally {
+      setSigningOut(false)
+    }
   }
 
   return (
@@ -203,27 +223,41 @@ const SidebarUser = ({
         </>
       ) : (
         // Safe fallback when signed out
-        <Button
-          variant="outline"
-          nativeButton={false}
-          render={<Link href="/sign-in" />}
-          onClick={onNavigate}
-        >
-          Sign In
-        </Button>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Sign In"
+              render={
+                <Link
+                  href="/sign-in"
+                  onClick={onNavigate}
+                  className="flex items-center gap-2 w-full"
+                >
+                  <LogIn className="size-4 shrink-0" />
+                  <span className="truncate">Sign In</span>
+                </Link>
+              }
+            />
+          </SidebarMenuItem>
+        </SidebarMenu>
       )}
 
       {user && (
         <>
           <SidebarSeparator />
-          <Button
-            variant="ghost"
-            className="justify-start w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={handleSignOut}
-          >
-            <LogOut />
-            Sign Out
-          </Button>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip="Sign Out"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              >
+                <LogOut />
+                <span>Sign Out</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </>
       )}
     </div>
