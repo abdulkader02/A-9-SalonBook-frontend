@@ -49,8 +49,16 @@ export const protectedMutation = async (api: string, method: string, data?: unkn
 
 export const requireRole = async (role: string) => {
     const session = await getSession();
-    if (!session || session?.user.role !== role) {
+
+    // Never logged in: send the visitor to Sign In so they can authenticate.
+    if (!session) {
+        redirect("/sign-in");
+    }
+
+    // Authenticated but wrong role: keep the existing Access Denied redirect.
+    if (session.user.role !== role) {
         redirect("/unauthorized");
     }
+
     return session;
 }

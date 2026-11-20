@@ -26,7 +26,8 @@ const SignInForm = ({ callbackUrl }: { callbackUrl?: string }) => {
   const [submitting, setSubmitting] = useState(false);
 
   // Only internal paths are accepted; otherwise keep the default redirect.
-  const redirectTo = getSafeCallbackUrl(callbackUrl) ?? "/";
+  const safeCallbackUrl = getSafeCallbackUrl(callbackUrl);
+  const redirectTo = safeCallbackUrl ?? "/";
   const signUpHref =
     redirectTo === "/"
       ? "/sign-up"
@@ -62,7 +63,19 @@ const SignInForm = ({ callbackUrl }: { callbackUrl?: string }) => {
         return;
       }
       toast.success("Signed in successfully!");
-      router.push(redirectTo);
+
+      // Preserve an explicit callbackUrl exactly as before; otherwise send the
+      // user to the dashboard that matches their role.
+      let destination = safeCallbackUrl;
+      if (!destination) {
+        const role =
+          (result.data?.user as { role?: string } | undefined)?.role ??
+          "customer";
+        destination =
+          role === "admin" ? "/dashboard/admin" : "/dashboard/customer";
+      }
+
+      router.push(destination);
       router.refresh();
     } catch {
       toast.error("Something went wrong. Please try again.");
@@ -76,7 +89,9 @@ const handleGoogleSignIn = async () => {
   try {
     const { error } = await signIn.social({
       provider: "google",
-      callbackURL: redirectTo,
+      // Keep an explicit callbackUrl; otherwise land on /dashboard, which
+      // redirects to the correct role dashboard server-side.
+      callbackURL: safeCallbackUrl ?? "/dashboard",
     });
 
     if (error) {

@@ -1,12 +1,20 @@
-// TODO: redirect to /dashboard/customer or /dashboard/admin based on the
-// logged-in user's session role.
+import { redirect } from "next/navigation"
 
-const DashboardPage = () => {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-    </div>
-  )
+import { getSession } from "@/lib/core/server"
+
+// Bare /dashboard entry point (old bookmarks, Navbar links, OAuth fallback):
+// send each visitor to the dashboard that matches their session role.
+const DashboardPage = async () => {
+  const session = await getSession()
+
+  if (!session) {
+    redirect("/sign-in")
+  }
+
+  const role =
+    (session.user as { role?: string } | undefined)?.role ?? "customer"
+
+  redirect(role === "admin" ? "/dashboard/admin" : "/dashboard/customer")
 }
 
 export default DashboardPage

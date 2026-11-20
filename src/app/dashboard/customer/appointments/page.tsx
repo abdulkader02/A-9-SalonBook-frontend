@@ -244,15 +244,21 @@ const MyAppointmentsPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="size-4" />
-                  {new Date(appointment.appointmentDate).toLocaleDateString()}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="size-4" />
-                  {appointment.timeSlot}
-                </span>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="size-4" />
+                    {new Date(appointment.appointmentDate).toLocaleDateString()}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="size-4" />
+                    {appointment.timeSlot}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Requested on{" "}
+                  {new Date(appointment.createdAt).toLocaleDateString()}
+                </p>
               </div>
 
               <div className="h-px w-full bg-muted/30" />

@@ -56,6 +56,11 @@ const Navbar = () => {
   const profilePath =
     role === "admin" ? "/dashboard/admin/profile" : "/dashboard/customer/profile"
 
+  // Public links, plus a direct Dashboard shortcut once the user is signed in.
+  const navLinks = user
+    ? [...publicLinks, { href: dashboardPath, label: "Dashboard" }]
+    : publicLinks
+
   // Active navigation
   const isActive = (href: string) => {
     if (href === "/" || href === "/#aboutus") {
@@ -112,7 +117,7 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 md:flex">
-          {publicLinks.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -246,7 +251,7 @@ const Navbar = () => {
 
             {/* Mobile Public Links */}
             <nav className="flex flex-col gap-1 px-4">
-              {publicLinks.map((link) => (
+              {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}

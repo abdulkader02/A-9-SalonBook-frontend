@@ -48,7 +48,7 @@ const ServicesBrowser = ({ services }: { services: Service[] }) => {
 
   // Keep the input in sync when the URL changes (back/forward, reset).
   useEffect(() => {
-    setSearchInput(search);
+    queueMicrotask(() => setSearchInput(search));
   }, [search]);
 
   const updateParams = (updates: Record<string, string>) => {

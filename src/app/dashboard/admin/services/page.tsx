@@ -265,7 +265,7 @@ const ManageServicesPage = () => {
       </div>
 
       {/* Desktop table (hidden on mobile) */}
-      <div className="mt-8 hidden overflow-hidden rounded-2xl border md:block">
+      <div className="mt-8 hidden w-full min-w-0 max-w-full overflow-x-auto rounded-2xl border md:block">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-muted/30 text-left text-muted-foreground">

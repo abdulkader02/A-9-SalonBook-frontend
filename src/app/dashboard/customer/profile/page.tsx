@@ -23,7 +23,7 @@ const CustomerProfilePage = () => {
   useEffect(() => {
     if (sessionLoading) return
     if (!customerId) {
-      setLoading(false)
+      queueMicrotask(() => setLoading(false))
       return
     }
 

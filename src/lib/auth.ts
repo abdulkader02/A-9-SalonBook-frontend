@@ -1,5 +1,6 @@
 
 import { betterAuth } from "better-auth"
+import { APIError, createAuthMiddleware } from "better-auth/api"
 import { MongoClient } from "mongodb"
 import { mongodbAdapter } from "@better-auth/mongo-adapter"
 
@@ -46,6 +47,46 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
+  },
+
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      // Only enforce the extra complexity rules on email/password sign-up.
+      if (ctx.path !== "/sign-up/email") {
+        return
+      }
+
+      const body: unknown = ctx.body
+      const password =
+        body && typeof body === "object" && "password" in body
+          ? (body as { password?: unknown }).password
+          : undefined
+
+      if (typeof password !== "string" || password.length === 0) {
+        throw new APIError("BAD_REQUEST", {
+          message: "Password is required.",
+        })
+      }
+
+      // Same rules the client form enforces - this is the server-side backstop.
+      if (password.length < 6) {
+        throw new APIError("BAD_REQUEST", {
+          message: "Password must contain at least 6 characters.",
+        })
+      }
+
+      if (!/[A-Z]/.test(password)) {
+        throw new APIError("BAD_REQUEST", {
+          message: "Password must contain one uppercase letter.",
+        })
+      }
+
+      if (!/[a-z]/.test(password)) {
+        throw new APIError("BAD_REQUEST", {
+          message: "Password must contain one lowercase letter.",
+        })
+      }
+    }),
   },
 
   socialProviders: {

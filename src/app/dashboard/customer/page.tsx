@@ -9,29 +9,6 @@ import { getMyAppointments } from "@/lib/api/appointments"
 import type { Appointment } from "@/lib/type/appointments"
 import { Button } from "@/components/ui/button"
 
-const statCards = [
-  {
-    label: "Total Appointment Requests",
-    icon: Calendar,
-    count: 0,
-  },
-  {
-    label: "Pending Appointments",
-    icon: Clock,
-    count: 0,
-  },
-  {
-    label: "Confirmed Appointments",
-    icon: CheckCircle2,
-    count: 0,
-  },
-  {
-    label: "Cancelled Appointments",
-    icon: XCircle,
-    count: 0,
-  },
-]
-
 const CustomerOverviewPage = () => {
   const { data: session, isPending: sessionLoading } = useSession()
 
