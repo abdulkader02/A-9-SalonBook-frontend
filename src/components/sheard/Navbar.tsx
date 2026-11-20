@@ -37,6 +37,9 @@ const publicLinks = [
   { href: "/#aboutus", label: "About Us" },
 ]
 
+// Auth pages should never be used as a "return to" destination.
+const authPaths = ["/sign-in", "/sign-up"]
+
 const Navbar = () => {
   const pathname = usePathname()
   const router = useRouter()
@@ -52,9 +55,15 @@ const Navbar = () => {
   const role = (user as { role?: string } | undefined)?.role ?? "customer"
   const dashboardPath =
     role === "admin" ? "/dashboard/admin" : "/dashboard/customer"
-    
+
   const profilePath =
     role === "admin" ? "/dashboard/admin/profile" : "/dashboard/customer/profile"
+
+  // After sign-in or sign-up, return the user to the page they were on.
+  // If they were on an auth page, return to the homepage instead.
+  const returnPath = authPaths.includes(pathname) ? "/" : pathname
+  const signInHref = `/sign-in?callbackUrl=${encodeURIComponent(returnPath)}`
+  const signUpHref = `/sign-up?callbackUrl=${encodeURIComponent(returnPath)}`
 
   // Public links, plus a direct Dashboard shortcut once the user is signed in.
   const navLinks = user
@@ -215,11 +224,11 @@ const Navbar = () => {
             </Popover>
           ) : (
             <>
-              <Button variant="ghost" render={<Link href="/sign-in" />}>
+              <Button variant="ghost" render={<Link href={signInHref} />}>
                 Sign In
               </Button>
 
-              <Button render={<Link href="/sign-up" />}>Sign Up</Button>
+              <Button render={<Link href={signUpHref} />}>Sign Up</Button>
             </>
           )}
         </div>
@@ -328,14 +337,14 @@ const Navbar = () => {
                 <>
                   <Button
                     variant="outline"
-                    render={<Link href="/sign-in" />}
+                    render={<Link href={signInHref} />}
                     onClick={() => setMobileOpen(false)}
                   >
                     Sign In
                   </Button>
 
                   <Button
-                    render={<Link href="/sign-up" />}
+                    render={<Link href={signUpHref} />}
                     onClick={() => setMobileOpen(false)}
                   >
                     Sign Up
