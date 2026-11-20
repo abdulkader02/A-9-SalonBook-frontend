@@ -7,6 +7,7 @@ import { AlertCircle, Calendar, Clock, CheckCircle2, XCircle } from "lucide-reac
 import { useSession } from "@/lib/auth-client"
 import { getMyAppointments } from "@/lib/api/appointments"
 import type { Appointment } from "@/lib/type/appointments"
+import StatCard from "@/components/dashboard/StatCard"
 import { Button } from "@/components/ui/button"
 
 const CustomerOverviewPage = () => {
@@ -61,13 +62,13 @@ const CustomerOverviewPage = () => {
         </div>
 
         {/* Skeleton stat cards */}
-        <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4 lg:gap-6">
           {[1, 2, 3, 4].map((index) => (
             <div
               key={index}
-              className="rounded-2xl border p-5 sm:p-6 h-full"
+              className="h-full rounded-2xl border p-3 sm:p-5 lg:p-6"
             >
-              <div className="h-10 w-10 animate-pulse rounded-lg bg-muted" />
+              <div className="size-8 animate-pulse rounded-lg bg-muted sm:size-10" />
               <div className="mt-3 flex items-center gap-2">
                 <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
                 <div className="h-5 w-full animate-pulse rounded bg-muted" />
@@ -101,15 +102,15 @@ const CustomerOverviewPage = () => {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
       <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
           Customer Dashboard Overview
         </h1>
-        <p className="text-base text-muted-foreground">
+        <p className="text-sm text-muted-foreground sm:text-base">
           Track all your salon appointment requests in one place.
         </p>
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4 lg:gap-6">
         {[
           {
             label: "Total Appointment Requests",
@@ -132,24 +133,12 @@ const CustomerOverviewPage = () => {
             value: cancelled,
           },
         ].map((stat) => (
-          <div
+          <StatCard
             key={stat.label}
-            className="rounded-2xl border bg-card p-5 sm:p-6 h-full flex flex-col justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                <stat.icon className="size-5" />
-              </div>
-              <div className="flex flex-col">
-                <p className="text-sm text-muted-foreground">
-                  {stat.label}
-                </p>
-                <p className="text-2xl font-bold tracking-tight">
-                  {stat.value}
-                </p>
-              </div>
-            </div>
-          </div>
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+          />
         ))}
       </div>
     </section>
