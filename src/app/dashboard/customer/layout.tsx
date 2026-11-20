@@ -1,10 +1,9 @@
-// TODO: auth check - customer role only; users without the customer role
-// (admins, unauthenticated, blocked) should be denied access to this whole
-// route branch.
+import { requireRole } from "@/lib/core/server"
+
 // The shared sidebar (src/components/sheard/DashboardSidebar.tsx) renders
 // customer nav items for users with the customer role.
-
-const CustomerLayout = ({ children }: { children: React.ReactNode }) => {
+const CustomerLayout = async ({ children }: { children: React.ReactNode }) => {
+  await requireRole("customer")
   return <div>{children}</div>
 }
 

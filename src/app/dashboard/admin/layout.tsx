@@ -1,10 +1,7 @@
-// TODO: auth check - admin role only; users without the admin role
-// (customers, unauthenticated, blocked) should be denied access to this whole
-// route branch.
-// The shared sidebar (src/components/sheard/DashboardSidebar.tsx) renders
-// admin nav items for users with the admin role.
+import { requireRole } from "@/lib/core/server"
 
-const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
+  await requireRole("admin")
   return <div>{children}</div>
 }
 
