@@ -129,23 +129,23 @@ GOOGLE_CLIENT_SECRET=your_value_here
 NEXT_PUBLIC_IMGBB_API_KEY=your_value_here
 ```
 
-| Variable | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_API_URL` | Base URL of the SalonBook Express API, for example the local API address. |
-| `NEXT_PUBLIC_BASE_URL` | Public base URL of this Next.js app, used by the Better Auth client. |
-| `BETTER_AUTH_URL` | Base URL used by Better Auth on the server. |
-| `BETTER_AUTH_SECRET` | Secret used by Better Auth to sign sessions and tokens. |
-| `MONGODB_URI` | MongoDB connection string used by the Better Auth MongoDB adapter. |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID for social sign-in. |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret for social sign-in. |
-| `NEXT_PUBLIC_IMGBB_API_KEY` | ImgBB API key used for profile and service image uploads. |
+| Variable                    | Purpose                                                                   |
+| --------------------------- | ------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`       | Base URL of the SalonBook Express API, for example the local API address. |
+| `NEXT_PUBLIC_BASE_URL`      | Public base URL of this Next.js app, used by the Better Auth client.      |
+| `BETTER_AUTH_URL`           | Base URL used by Better Auth on the server.                               |
+| `BETTER_AUTH_SECRET`        | Secret used by Better Auth to sign sessions and tokens.                   |
+| `MONGODB_URI`               | MongoDB connection string used by the Better Auth MongoDB adapter.        |
+| `GOOGLE_CLIENT_ID`          | Google OAuth client ID for social sign-in.                                |
+| `GOOGLE_CLIENT_SECRET`      | Google OAuth client secret for social sign-in.                            |
+| `NEXT_PUBLIC_IMGBB_API_KEY` | ImgBB API key used for profile and service image uploads.                 |
 
 > `NEXT_PUBLIC_*` variables are exposed to the browser. Keep real secrets out of source control and
 > configure them in your hosting provider's environment settings for deployment.
 
 ## Live Website Link
 
-`<ADD_CLIENT_LIVE_URL_HERE>`
+[https://salonbook-client-eight.vercel.app]
 
 ## Client and Server Repository Links
 
