@@ -1,4 +1,3 @@
-
 import { betterAuth } from "better-auth"
 import { APIError, createAuthMiddleware } from "better-auth/api"
 import { MongoClient } from "mongodb"
@@ -10,7 +9,15 @@ if (!uri) {
   throw new Error("MONGODB_URI environment variable is not set")
 }
 
-const client = new MongoClient(uri)
+// Reuse one MongoClient across serverless invocations so a closed
+// connection is never kept around.
+const globalForMongo = globalThis as unknown as {
+  mongoClient?: MongoClient
+}
+
+const client = globalForMongo.mongoClient ?? new MongoClient(uri)
+globalForMongo.mongoClient = client
+
 const db = client.db("salonbook")
 
 export const auth = betterAuth({
