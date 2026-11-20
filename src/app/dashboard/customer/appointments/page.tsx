@@ -51,15 +51,15 @@ const MyAppointmentsPage = () => {
   useEffect(() => {
     if (sessionLoading) return
 
-    const customerId = session?.user?.id
-    if (!customerId) {
+    if (!session?.user) {
       queueMicrotask(() => setLoading(false))
       return
     }
 
     const fetchAppointments = async () => {
       try {
-        const data = await getMyAppointments(customerId)
+        // Scoped server-side to the authenticated user (no customerId query).
+        const data = await getMyAppointments()
         setAppointments(data)
       } catch {
         setErrorMessage("We couldn't load your appointments right now.")

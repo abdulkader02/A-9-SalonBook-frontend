@@ -1,113 +1,95 @@
+"use server"
+
+import { authFetch, protectedMutation } from "@/lib/core/server"
 import type {
-  CreateAppointmentPayload,
-  Appointment,
   AdminAppointment,
+  Appointment,
+  CreateAppointmentPayload,
 } from "@/lib/type/appointments"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "")
+
+// Read the server's error message without throwing if the body is empty/invalid.
+const readServerMessage = async (response: Response): Promise<string | null> => {
+  try {
+    const body: unknown = await response.json()
+
+    if (body && typeof body === "object" && !Array.isArray(body)) {
+      const { message } = body as { message?: unknown }
+      if (typeof message === "string" && message.trim()) {
+        return message.trim()
+      }
+    }
+  } catch {
+    // No usable message in the response body.
+  }
+
+  return null
+}
+
+// 401/403 are redirected by authFetch/protectedMutation; throw on other failures.
+const assertOk = async (response: Response, fallbackMessage: string) => {
+  if (response.ok) return
+
+  const serverMessage = await readServerMessage(response)
+  throw new Error(serverMessage ?? fallbackMessage)
+}
+
+const parseJson = async <T>(response: Response): Promise<T> => {
+  if (response.status === 204) return undefined as T
+  return (await response.json()) as T
+}
 
 export const createAppointment = async (
   payload: CreateAppointmentPayload
 ): Promise<{ message?: string }> => {
-  const res = await fetch(`${API_BASE_URL}/appointments`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
-
-  if (!res.ok) {
-    // Prefer the backend's message; fall back to a friendly generic one.
-    let message = "Failed to submit appointment request. Please try again."
-    try {
-      const data = await res.json()
-      if (data?.message) message = data.message
-    } catch {}
-    throw new Error(message)
-  }
-
-  return res.json()
-}
-
-export const getMyAppointments = async (
-  customerId: string
-): Promise<Appointment[]> => {
-  const res = await fetch(
-    `${API_BASE_URL}/appointments?customerId=${customerId}`,
-    {
-      cache: "no-store",
-    }
+  const res = await protectedMutation(
+    `${API_BASE_URL}/appointments`,
+    "POST",
+    payload
   )
+  await assertOk(res, "Failed to submit appointment request. Please try again.")
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch appointments (${res.status})`)
-  }
-
-  return res.json()
+  return parseJson<{ message?: string }>(res)
 }
 
+// Customer scope is derived server-side from the Bearer token.
+export const getMyAppointments = async (): Promise<Appointment[]> => {
+  const res = await authFetch(`${API_BASE_URL}/appointments`)
+  await assertOk(res, "Failed to fetch appointments. Please try again.")
+
+  return parseJson<Appointment[]>(res)
+}
 
 export const cancelAppointment = async (
   appointmentId: string
 ): Promise<{ message?: string }> => {
-  const res = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/cancel`, {
-    method: "PATCH",
-  })
+  const res = await protectedMutation(
+    `${API_BASE_URL}/appointments/${encodeURIComponent(appointmentId)}/cancel`,
+    "PATCH"
+  )
+  await assertOk(res, "Failed to cancel appointment. Please try again.")
 
-  if (!res.ok) {
-    let message = "Failed to cancel appointment. Please try again."
-    try {
-      const data = await res.json()
-      if (data?.message) message = data.message
-    } catch {
-      // Response was not JSON
-    }
-    throw new Error(message)
-  }
-
-  return res.json()
+  return parseJson<{ message?: string }>(res)
 }
 
 export const getAdminAppointments = async (): Promise<AdminAppointment[]> => {
-  const res = await fetch(`${API_BASE_URL}/admin/appointments`, {
-    cache: "no-store",
-    credentials: "include",
-  })
+  const res = await authFetch(`${API_BASE_URL}/admin/appointments`)
+  await assertOk(res, "Failed to fetch appointments. Please try again.")
 
-  if (!res.ok) {
-    let message = "Failed to fetch appointments. Please try again."
-    try {
-      const data = await res.json()
-      if (data?.message) message = data.message
-    } catch {
-      // Response was not JSON
-    }
-    throw new Error(message)
-  }
-
-  return res.json()
+  return parseJson<AdminAppointment[]>(res)
 }
 
 export const updateAppointmentStatus = async (
   appointmentId: string,
   status: "confirmed" | "cancelled"
 ): Promise<{ message?: string }> => {
-  const res = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/status`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ status }),
-  })
+  const res = await protectedMutation(
+    `${API_BASE_URL}/appointments/${encodeURIComponent(appointmentId)}/status`,
+    "PATCH",
+    { status }
+  )
+  await assertOk(res, "Failed to update appointment. Please try again.")
 
-  if (!res.ok) {
-    let message = "Failed to update appointment. Please try again."
-    try {
-      const data = await res.json()
-      if (data?.message) message = data.message
-    } catch {
-      // Response was not JSON
-    }
-    throw new Error(message)
-  }
-
-  return res.json()
+  return parseJson<{ message?: string }>(res)
 }

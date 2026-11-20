@@ -1,6 +1,6 @@
+// customerId is derived server-side from the Bearer token; do not send it.
 export interface CreateAppointmentPayload {
   serviceId: string
-  customerId: string
   appointmentDate: string // ISO date string
   timeSlot: string
   message?: string

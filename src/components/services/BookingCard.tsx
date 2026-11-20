@@ -88,9 +88,9 @@ const BookingCard = ({ service }: { service: Service }) => {
 
       setSubmitting(true)
     try {
+      // customerId is derived server-side from the Bearer token.
       await createAppointment({
         serviceId: service._id,
-        customerId: session!.user.id,
         appointmentDate: new Date(`${appointmentDate}T00:00:00`).toISOString(),
         timeSlot,
         ...(message.trim() ? { message: message.trim() } : {}),
