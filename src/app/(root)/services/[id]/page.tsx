@@ -114,6 +114,7 @@ const ServiceDetailsPage = async ({
                 alt={service.serviceName}
                 fill
                 priority
+                unoptimized
                 sizes="(min-width: 1024px) 66vw, 100vw"
                 className="object-cover"
               />
