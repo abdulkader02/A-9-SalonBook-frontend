@@ -42,7 +42,6 @@ const authPaths = ["/sign-in", "/sign-up"]
 
 const Navbar = () => {
   const pathname = usePathname()
-  const router = useRouter()
 
   // Better Auth session
   const { data: session, isPending } = useSession()
@@ -105,7 +104,7 @@ const Navbar = () => {
       // Intentional hard navigation (not router.push) to fully clear Next.js's
       // client-side router cache after sign-out, avoiding a stale cached payload.
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.href = "/sign-in"
+      window.location.href = `/sign-in?callbackUrl=${encodeURIComponent("/")}`
     } catch (error) {
       console.error("Unexpected sign out error:", error)
       toast.error("Something went wrong. Please try again.")
