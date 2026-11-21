@@ -1,26 +1,18 @@
-import Link from "next/link";
-import {
-  Scissors,
-  Phone,
-  Mail,
-  MapPin,
-  Facebook,
-  Instagram,
-  Twitter,
-} from "lucide-react";
+import Link from "next/link"
+import { Scissors, Phone, Mail, MapPin, Globe } from "lucide-react"
 
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/components/ui/separator"
 
 const quickLinks = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Browse Services" },
-];
+]
 
 const socialLinks = [
-  { label: "Facebook", href: "https://www.facebook.com/", icon: Facebook },
-  { label: "Instagram", href: "https://www.instagram.com/", icon: Instagram },
-  { label: "Twitter", href: "https://twitter.com/", icon: Twitter },
-];
+  { label: "Facebook", href: "https://www.facebook.com/", icon: Globe },
+  { label: "Instagram", href: "https://www.instagram.com/", icon: Globe },
+  { label: "Twitter", href: "https://twitter.com/", icon: Globe },
+]
 
 const Footer = () => {
   return (
@@ -120,7 +112,7 @@ const Footer = () => {
         </p>
       </div>
     </footer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer
