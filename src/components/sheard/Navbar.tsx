@@ -57,7 +57,9 @@ const Navbar = () => {
     role === "admin" ? "/dashboard/admin" : "/dashboard/customer"
 
   const profilePath =
-    role === "admin" ? "/dashboard/admin/profile" : "/dashboard/customer/profile"
+    role === "admin"
+      ? "/dashboard/admin/profile"
+      : "/dashboard/customer/profile"
 
   // After sign-in or sign-up, return the user to the page they were on.
   // If they were on an auth page, return to the homepage instead.
@@ -100,8 +102,10 @@ const Navbar = () => {
       setMobileOpen(false)
 
       toast.success("Signed out successfully.")
-      router.push("/sign-in")
-      router.refresh()
+      // Intentional hard navigation (not router.push) to fully clear Next.js's
+      // client-side router cache after sign-out, avoiding a stale cached payload.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.href = "/sign-in"
     } catch (error) {
       console.error("Unexpected sign out error:", error)
       toast.error("Something went wrong. Please try again.")
