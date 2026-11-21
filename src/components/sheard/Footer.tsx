@@ -4,6 +4,9 @@ import {
   Phone,
   Mail,
   MapPin,
+  Facebook,
+  Instagram,
+  Twitter,
 } from "lucide-react";
 
 import { Separator } from "@/components/ui/separator";
@@ -13,7 +16,11 @@ const quickLinks = [
   { href: "/services", label: "Browse Services" },
 ];
 
-const socialLinks = ["Facebook", "Instagram", "Twitter"];
+const socialLinks = [
+  { label: "Facebook", href: "https://www.facebook.com/", icon: Facebook },
+  { label: "Instagram", href: "https://www.instagram.com/", icon: Instagram },
+  { label: "Twitter", href: "https://twitter.com/", icon: Twitter },
+];
 
 const Footer = () => {
   return (
@@ -35,13 +42,16 @@ const Footer = () => {
               services, request appointments and pay securely online.
             </p>
             <div className="flex flex-wrap items-center gap-2">
-              {socialLinks.map((label) => (
+              {socialLinks.map(({ label, href, icon: Icon }) => (
                 <Link
                   key={label}
-                  href="#"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={label}
-                  className="rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  className="flex items-center gap-1.5 rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
+                  <Icon className="size-3.5" />
                   {label}
                 </Link>
               ))}
