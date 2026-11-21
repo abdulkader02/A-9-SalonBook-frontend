@@ -224,11 +224,16 @@ const Navbar = () => {
             </Popover>
           ) : (
             <>
-              <Button variant="ghost" render={<Link href={signInHref} />}>
+              <Button
+                variant="ghost"
+                render={<Link href={signInHref} prefetch={false} />}
+              >
                 Sign In
               </Button>
 
-              <Button render={<Link href={signUpHref} />}>Sign Up</Button>
+              <Button render={<Link href={signUpHref} prefetch={false} />}>
+                Sign Up
+              </Button>
             </>
           )}
         </div>
@@ -337,14 +342,14 @@ const Navbar = () => {
                 <>
                   <Button
                     variant="outline"
-                    render={<Link href={signInHref} />}
+                    render={<Link href={signInHref} prefetch={false} />}
                     onClick={() => setMobileOpen(false)}
                   >
                     Sign In
                   </Button>
 
                   <Button
-                    render={<Link href={signUpHref} />}
+                    render={<Link href={signUpHref} prefetch={false} />}
                     onClick={() => setMobileOpen(false)}
                   >
                     Sign Up
